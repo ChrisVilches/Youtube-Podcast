@@ -14,20 +14,16 @@ const DOWNLOAD_OPTIONS: DownloadOptions = {
   format: 'mp4'
 }
 
-export async function tryGetBasicInfo (videoId: string): Promise<object | null> {
-  try {
-    const yt = await Innertube.create({ cache: new UniversalCache() })
-    const data = await yt.getBasicInfo(videoId)
-    const { id, title, short_description: description, thumbnail: thumbnails } = data.basic_info
+export async function getBasicInfo (videoId: string): Promise<object> {
+  const yt = await Innertube.create({ cache: new UniversalCache() })
+  const data = await yt.getBasicInfo(videoId)
+  const { id, title, short_description: description, thumbnail: thumbnails } = data.basic_info
 
-    return {
-      id,
-      title,
-      description,
-      thumbnails
-    }
-  } catch {
-    return null
+  return {
+    id,
+    title,
+    description,
+    thumbnails
   }
 }
 
@@ -47,7 +43,6 @@ export async function downloadVideoToAudio (videoId: string, outputName: string)
     mkdirSync(dir)
   }
 
-  // TODO: Use path.join
   const file = createWriteStream(`${path.join(dir, outputName)}.m4a`)
 
   for await (const chunk of streamToIterable(stream)) {
