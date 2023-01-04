@@ -1,2 +1,4 @@
 node_modules
-.downloaded
+dist
+files/*
+!files/.gitkeep
