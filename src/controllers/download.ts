@@ -26,6 +26,12 @@ const executeDownload = async (req: Request, res: Response, next: NextFunction):
     return
   }
 
+  // TODO: fileName may contain colons and semicolons. I think they need to be cleaned before
+  //       setting this header.
+  res.setHeader('Content-Disposition', `attachment; filename=${fileName}`)
+  res.setHeader('Content-Transfer-Encoding', 'binary')
+  res.setHeader('Content-Type', 'application/octet-stream')
+
   res.sendFile(fileName, { root: storageDir }, (err) => {
     if (typeof err !== 'undefined') {
       next(createError.InternalServerError())
