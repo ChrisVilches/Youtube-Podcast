@@ -1,12 +1,9 @@
 import { join } from 'path'
 import { readdir } from 'fs'
 
-// TODO: Note that this actually doesn't work... because the file will be seen as "already downloaded"
-//       simply because the stream is being written to disk, and the file exists, but the download is not complete.
-//       I haven't actually confirmed this happen, but it should happen the way I described.
-
 // TODO: This function doesn't need to be "async" as far as I know.. (lint error?)
 /* eslint-disable @typescript-eslint/promise-function-async */
+// TODO: The name of this function should be different.
 export function isFileAlreadyDownloaded (videoId: string): Promise<string> {
   const storageDir = join(__dirname, '..', '..', 'files', videoId)
 

@@ -18,6 +18,8 @@
     "http-errors": "~1.6.3",
     "minio": "^7.0.32",
     "morgan": "~1.9.1",
+    "redis": "^4.5.1",
+    "redis-lock": "^1.0.0",
     "tsx": "^3.12.1",
     "youtubei.js": "^2.7.0"
   },

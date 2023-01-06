@@ -10,21 +10,24 @@ import { join } from 'path'
 
 export const downloadController = async (req: Request, res: Response): Promise<void> => {
   const videoId: string = (req.query.v as string) ?? ''
-  const storageDir = join(__dirname, '..', 'files', videoId)
+  const storageDir = join(__dirname, '../../files', videoId)
 
   try {
     const fileName = await isFileAlreadyDownloaded(videoId)
-    res.sendFile(fileName, { root: storageDir })
+    res.sendFile(fileName, { root: storageDir }, (err) => {
+      if (typeof err !== 'undefined') {
+        // TODO: This error should be handled properly. The user shouldn't see this.
+        res.status(400).send('File was not found')
+      }
+    })
   } catch (e) {
-    res.status(400).send(e.toString())
+    res.status(400).send((e as Error).toString())
   }
 }
 
 export const prepareController = async (_req: Request, res: Response): Promise<void> => {
   // TODO: This should dispatch a worker on Redis or something like that.
-  downloadVideoToAudio(res.locals.videoId, res.locals.info.title).then(r => {
-    console.log(`Result: ${r ? 'Yes' : 'No'}`)
-  }).catch(console.error)
+  downloadVideoToAudio(res.locals.videoId, res.locals.info.title).then(() => {}).catch(console.error)
 
   res.send('Downloading & converting... execute /download?v=... after a few moments')
 }
