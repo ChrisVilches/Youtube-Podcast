@@ -14,9 +14,6 @@ const connectQueue = (name: string): Bull.Queue => {
 let queue: Bull.Queue | null = null
 
 export const getVideosQueue = (): Bull.Queue => {
-  if (queue === null) {
-    queue = connectQueue('youtube-videos-to-download')
-  }
-
+  queue ??= connectQueue('youtube-videos-to-download')
   return queue
 }

@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/http-errors": "^2.0.1",
     "@types/morgan": "^1.9.4",
     "bull": "^4.10.2",
     "cookie-parser": "~1.4.4",

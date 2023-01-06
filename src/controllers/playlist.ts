@@ -1,8 +1,18 @@
 import { Request, Response } from 'express'
-import { getPlayList } from '../youtube/download'
+import { getVideosQueue } from '../queues/getVideosQueue'
+import { getPlayList } from '../youtube/scraping'
 
-// TODO: Make the output pretty.
 export const showPlaylistInfoController = async (req: Request, res: Response): Promise<void> => {
   const playlist = await getPlayList(req.params.id)
-  res.json(playlist.items)
+  res.json(playlist)
+}
+
+export const playlistPrepareAllController = async (req: Request, res: Response): Promise<void> => {
+  const playlist = await getPlayList(req.params.id)
+  const ids = playlist.items.map((item: any) => item.id)
+
+  for (const id of ids) {
+    await getVideosQueue().add({ id })
+  }
+  res.json(ids)
 }
