@@ -1,5 +1,7 @@
 import dotenv from 'dotenv'
+import { Subject } from 'rxjs/internal/Subject'
 import { getVideosQueue } from './queues/getVideosQueue'
+import { removeProgress, updateProgress } from './redis/videoProgress'
 import { downloadVideoToAudio, getBasicInfo } from './youtube/scraping'
 
 dotenv.config()
@@ -9,33 +11,63 @@ dotenv.config()
 //       before exiting the process.
 
 const formatDuration = (seconds: number): string => {
+  if (isNaN(seconds)) {
+    return 'N/A'
+  }
+
   return new Date(seconds * 1000).toISOString().slice(11, 19)
 }
 
-const validateDuration = (duration: number): void => {
-  if (duration > Number(process.env.MAX_VIDEO_LENGTH_SECONDS)) {
-    throw new Error(`Video is too long (${formatDuration(duration)})`)
-  }
-
-  if (typeof duration !== 'number' || duration === 0 || isNaN(duration)) {
-    throw new Error(`Duration is ${duration}, but must be a number greater than zero (video may be invalid)`)
-  }
-}
+const bytesToMb = (bytes: number): number => bytes / 1000000
 
 const processVideoId = async (videoId: string): Promise<void> => {
-  try {
-    const info = await getBasicInfo(videoId)
-    const { title: videoTitle, duration } = info
+  const info = await getBasicInfo(videoId)
+  const { title: videoTitle, duration, lengthBytes } = info
+  const totalBytes = lengthBytes ?? Infinity
 
-    console.log(`📄 ${videoTitle}`)
-    validateDuration(duration)
-    console.log(`🕓 ${formatDuration(duration)}`)
+  console.log(`📄 ${videoTitle}`)
+  console.log(`🕓 ${formatDuration(duration)}`)
 
-    await downloadVideoToAudio(info)
-  } catch (e) {
-    console.error(`❌ ${e as string}`)
-    console.error('❌ Exiting.')
-  }
+  const subject = new Subject<number>()
+  downloadVideoToAudio(info, subject).catch(console.log)
+
+  return await new Promise(resolve => {
+    subject.subscribe({
+      next: (b: number) => {
+        // TODO: The flow of this should be done also using RxJS in a more controlled way.
+        const p = Math.floor(100 * b / totalBytes)
+        updateProgress(videoId, p).catch(console.error)
+      },
+      complete: () => {
+        removeProgress(videoId).catch(console.error)
+      },
+      error: () => {
+        removeProgress(videoId).catch(console.error)
+      }
+    })
+
+    subject.subscribe({
+      next: (b: number) => {
+        if (b === 0) {
+          console.log('⏬ Downloading...')
+        }
+
+        const mb = bytesToMb(totalBytes)
+        const p = Math.floor(100 * b / totalBytes)
+
+        process.stdout.write(`\r${b} bytes of ${totalBytes} (${p}% of ${mb}MB)`)
+        if (p === 100) {
+          process.stdout.write('\r')
+          console.log(`💾 Scraped size ${totalBytes}. Final size: ${b} ${totalBytes === b ? '✅' : '❌'}`)
+        }
+      },
+      complete: resolve,
+      error: (e: any) => {
+        console.log(`❌ ${e as string}`)
+        resolve()
+      }
+    })
+  })
 }
 
 const queueConsumer = async (): Promise<void> => {
@@ -48,4 +80,4 @@ const queueConsumer = async (): Promise<void> => {
   })
 }
 
-queueConsumer().catch(console.error)
+queueConsumer().catch(console.log)

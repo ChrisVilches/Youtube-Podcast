@@ -6,10 +6,9 @@ import path from 'path'
 import { withNamedLock } from './withNamedLock'
 import { isFileAlreadyDownloaded } from '../storage/file-downloaded'
 import Thumbnail from 'youtubei.js/dist/src/parser/classes/misc/Thumbnail'
+import { Subject } from 'rxjs'
 
-const tmpDownloadPath = (): string => process.env.TMP_DOWNLOAD_PATH ?? ''
-
-const DOWNLOAD_FINAL_DIR = './files'
+const DOWNLOAD_DIR = './files'
 const DOWNLOAD_OPTIONS: DownloadOptions = {
   type: 'audio',
   quality: 'bestefficiency',
@@ -62,12 +61,7 @@ async function getInnertube (): Promise<Innertube> {
   return innertube
 }
 
-const bytesToMb = (bytes: number): number => bytes / 1000000
-
-async function downloadVideoToAudioAux (videoId: string, videoTitle: string, lengthBytes?: number): Promise<void> {
-  // TODO: This should check also be done from the prepare controller, and it should be enough
-  //       to only do it from there, if it's properly implemented. But keep this one as well since
-  //       it doesn't damage the logic.
+async function downloadVideoToAudioAux (videoId: string, videoTitle: string, subject: Subject<number>): Promise<void> {
   if (await isFileAlreadyDownloaded(videoId)) {
     throw new Error(`Video ${videoId} was already downloaded`)
   }
@@ -75,52 +69,39 @@ async function downloadVideoToAudioAux (videoId: string, videoTitle: string, len
   const yt = await getInnertube()
 
   const stream = await yt.download(videoId, DOWNLOAD_OPTIONS)
-  const dir = path.join(DOWNLOAD_FINAL_DIR, videoId)
+  const dir = path.join(DOWNLOAD_DIR, videoId)
 
-  // Download file to temp folder
-  ensureDir(tmpDownloadPath())
-
-  const tmpFile = path.join(tmpDownloadPath(), videoId)
+  ensureDir(dir)
   const finalFile = `${path.join(dir, videoTitle)}.m4a`
-
-  const file = fs.createWriteStream(tmpFile)
-
-  console.log(`⏬ Downloading ${videoId}...`)
+  const file = fs.createWriteStream(finalFile)
 
   let completeBytes = 0
-  let percentage = 0
 
+  subject.next(0)
   for await (const chunk of streamToIterable(stream)) {
     file.write(chunk)
     completeBytes += chunk.byteLength
-
-    if (typeof lengthBytes === 'number') {
-      const nextPercentage = Math.ceil(100 * completeBytes / lengthBytes)
-
-      if (percentage !== nextPercentage) {
-        percentage = Math.min(100, nextPercentage)
-        process.stdout.write(`\r${percentage}% of ${bytesToMb(lengthBytes)} MB`)
-      }
-    }
+    subject.next(completeBytes)
   }
-
-  process.stdout.write('\r')
-
-  // Move temporary file to final folder (TODO: should be a more robust service like Minio or S3)
-  ensureDir(dir)
-
-  const finalSizeBytes = fs.statSync(tmpFile).size
-  if (typeof lengthBytes === 'number') {
-    console.log(`💾 Scraped size ${lengthBytes}. Final size: ${finalSizeBytes} ${lengthBytes === finalSizeBytes ? '✅' : '❌'}`)
-  } else {
-    console.log('❌ Length in bytes was not scraped')
-  }
-
-  fs.renameSync(tmpFile, finalFile)
 }
 
-export async function downloadVideoToAudio ({ id, title, lengthBytes }: VideoBasicInfo): Promise<void> {
-  return await withNamedLock(id, async () => await downloadVideoToAudioAux(id, title, lengthBytes))
+const validateDuration = (duration: number): void => {
+  if (duration > Number(process.env.MAX_VIDEO_LENGTH_SECONDS)) {
+    throw new Error(`Video is too long (${duration} seconds)`)
+  }
+
+  if (typeof duration !== 'number' || duration === 0 || isNaN(duration)) {
+    throw new Error(`Duration is ${duration}, but must be a number greater than zero (video may be invalid)`)
+  }
+}
+
+export async function downloadVideoToAudio ({ id, title, duration }: VideoBasicInfo, subject: Subject<number>): Promise<void> {
+  await withNamedLock(id, async () => {
+    validateDuration(duration)
+    await downloadVideoToAudioAux(id, title, subject)
+  }).catch(e => subject.error(e))
+
+  subject.complete()
 }
 
 /*
@@ -133,6 +114,17 @@ export function UNUSED_FOR_NOW_videoIdFromURL (url: string): string {
   return v
 }
 */
+
+// TODO: implement
+// TODO: I'll probably not use this one. Delete this, the controller, and the API middleware, etc.
+export async function getChannel (id: string): Promise<null> {
+  const yt = await getInnertube()
+  console.log(`id: [${id}]`)
+  const res = await yt.getChannel(id)
+  console.log('Maybe it worked? lol')
+  console.log(res)
+  return null
+}
 
 export async function getPlayList (id: string): Promise<PlaylistInfo> {
   const yt = await getInnertube()

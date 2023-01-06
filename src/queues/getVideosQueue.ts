@@ -1,12 +1,8 @@
 import Bull from 'bull'
+import { redisUrl } from '../redis/redisUrl'
 
 const connectQueue = (name: string): Bull.Queue => {
-  const queue: Bull.Queue = new Bull(name, {
-    redis: {
-      port: Number(process.env.REDIS_PORT),
-      host: process.env.REDIS_HOST
-    }
-  })
+  const queue: Bull.Queue = new Bull(name, redisUrl())
 
   return queue
 }
