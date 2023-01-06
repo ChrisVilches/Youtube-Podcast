@@ -17,12 +17,10 @@ const getClient = async (): Promise<RedisClientType> => {
 }
 
 export const withNamedLock = async (lockName: string, fn: () => Promise<void>): Promise<void> => {
-  // TODO: I think I should use a single singleton client.
   const client = await getClient()
   const lock = redisLock(client)
 
-  // TODO: Not sure about this type.
-  let unlock: Function | null = null
+  let unlock: (() => Promise<void>) | null = null
 
   try {
     console.log(`Trying to acquire lock ${lockName}`)
@@ -32,7 +30,7 @@ export const withNamedLock = async (lockName: string, fn: () => Promise<void>): 
     await fn()
   } finally {
     if (unlock !== null) {
-      unlock()
+      await unlock()
       console.log(`Released lock ${lockName}`)
     }
   }

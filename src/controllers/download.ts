@@ -2,13 +2,13 @@ import { Request, Response } from 'express'
 import { isFileAlreadyDownloaded } from '../storage/isFileAlreadyDownloaded'
 import { downloadVideoToAudio } from '../youtube/download'
 import { join } from 'path'
+import { checkAlreadyPrepared } from '../middlewares/checkAlreadyPrepared'
+import { requireVideoId } from '../middlewares/requireVideoId'
+import { setVideoBasicInfo } from '../middlewares/setVideoBasicInfo'
 
-// TODO: Should lock the file to be downloaded, so that it's only downloaded once...
-//       Ok so I do need SQL after all? (not MongoDB). Or use like a Redis with some atomic operations?
-//       I don't know if that's possible.
 // TODO: File storage must be improved. Storing the files here is not good.
 
-export const downloadController = async (req: Request, res: Response): Promise<void> => {
+const executeDownload = async (req: Request, res: Response): Promise<void> => {
   const videoId: string = (req.query.v as string) ?? ''
   const storageDir = join(__dirname, '../../files', videoId)
 
@@ -25,9 +25,13 @@ export const downloadController = async (req: Request, res: Response): Promise<v
   }
 }
 
-export const prepareController = async (_req: Request, res: Response): Promise<void> => {
-  // TODO: This should dispatch a worker on Redis or something like that.
-  downloadVideoToAudio(res.locals.videoId, res.locals.info.title).then(() => {}).catch(console.error)
+const executePrepare = async (_req: Request, res: Response): Promise<void> => {
+  const videoId: string = res.locals.videoId
 
-  res.send('Downloading & converting... execute /download?v=... after a few moments')
+  // TODO: This should dispatch a worker on Redis or something like that.
+  downloadVideoToAudio(videoId, res.locals.info.title).then(() => {}).catch(console.error)
+  res.send(`Download is in process. Try using /download?v=${videoId} after a few moments in order to download`)
 }
+
+export const downloadController = [requireVideoId, executeDownload]
+export const prepareController = [requireVideoId, checkAlreadyPrepared, setVideoBasicInfo, executePrepare]

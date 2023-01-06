@@ -3,7 +3,8 @@ import { readdir } from 'fs'
 
 // TODO: This function doesn't need to be "async" as far as I know.. (lint error?)
 /* eslint-disable @typescript-eslint/promise-function-async */
-// TODO: The name of this function should be different.
+// TODO: The name of this function should be different. Or create two/three variants, one that throws
+//       one that only returns a boolean, and one that returns the name of the downloaded file.
 export function isFileAlreadyDownloaded (videoId: string): Promise<string> {
   const storageDir = join(__dirname, '..', '..', 'files', videoId)
 

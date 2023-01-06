@@ -6,6 +6,7 @@ import path from 'path'
 import { withNamedLock } from './withNamedLock'
 import { isFileAlreadyDownloaded } from '../storage/isFileAlreadyDownloaded'
 
+// TODO: There should be a video length limit. Also avoid downloading streams, etc.
 // TODO: Should I memoize the cache object?
 // const yt = await Innertube.create({ cache: new UniversalCache() });
 
@@ -42,6 +43,9 @@ const ensureDir = (dir: string): void => {
 async function downloadVideoToAudioAux (videoId: string, videoTitle: string): Promise<void> {
   // TODO: This bit is a bit awkward.
   try {
+    // TODO: This should check also be done from the prepare controller, and it should be enough
+    //       to only do it from there, if it's properly implemented. But keep this one as well since
+    //       it doesn't damage the logic.
     await isFileAlreadyDownloaded(videoId)
     console.log(`Video ${videoId} was already downloaded. Exiting`)
     return
