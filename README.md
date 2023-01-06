@@ -1,5 +1,9 @@
 # Youtube Podcast
 
+System for scraping Youtube videos and converting them into podcasts (or music files).
+
+Transcription, frontend and content summarization features coming soon.
+
 ## Run
 
 Installation:
