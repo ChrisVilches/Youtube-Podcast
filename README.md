@@ -9,6 +9,7 @@ Transcription, frontend and content summarization features coming soon.
 Installation:
 
 ```
+nvm use
 npm install
 ```
 

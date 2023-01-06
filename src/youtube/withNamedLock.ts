@@ -13,6 +13,8 @@ const LOCK_TIMEOUT = Number(process.env.LOCK_TIMEOUT_SECONDS) * 1000
 //       However note that the progress values stored in Redis also don't get cleaned up, so that's another problem
 //       to fix.
 export const withNamedLock = async (lockName: string, fn: () => Promise<void>): Promise<void> => {
+  await fn()
+  /*
   const client = await getRedisClient()
   const lock = redisLock(client)
 
@@ -31,4 +33,5 @@ export const withNamedLock = async (lockName: string, fn: () => Promise<void>): 
       console.log(`🔓 Released lock ${lockName}`)
     }
   }
+  */
 }
