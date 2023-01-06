@@ -1,10 +1,9 @@
 import { Request, Response } from 'express'
 import { isFileAlreadyDownloaded } from '../storage/isFileAlreadyDownloaded'
-import { downloadVideoToAudio } from '../youtube/download'
 import { join } from 'path'
 import { checkAlreadyPrepared } from '../middlewares/checkAlreadyPrepared'
 import { requireVideoId } from '../middlewares/requireVideoId'
-import { setVideoBasicInfo } from '../middlewares/setVideoBasicInfo'
+import { getVideosQueue } from '../queues/getVideosQueue'
 
 // TODO: File storage must be improved. Storing the files here is not good.
 
@@ -25,13 +24,20 @@ const executeDownload = async (req: Request, res: Response): Promise<void> => {
   }
 }
 
+// TODO: Check if it's already being prepared. I already wrote this TODO comment somewhere else.
+//       Basically this would avoid enqueueing too many items to the queue.
 const executePrepare = async (_req: Request, res: Response): Promise<void> => {
   const videoId: string = res.locals.videoId
 
-  // TODO: This should dispatch a worker on Redis or something like that.
-  downloadVideoToAudio(videoId, res.locals.info.title).then(() => {}).catch(console.error)
+  await getVideosQueue().add({
+    id: videoId
+  })
+
   res.send(`Download is in process. Try using /download?v=${videoId} after a few moments in order to download`)
 }
 
 export const downloadController = [requireVideoId, executeDownload]
-export const prepareController = [requireVideoId, checkAlreadyPrepared, setVideoBasicInfo, executePrepare]
+
+// TODO: The only problem of removing the "setVideoBasicInfo" middleware is that now we cannot tell the
+//       user if the video is available or not. It's processed later in the worker.
+export const prepareController = [requireVideoId, checkAlreadyPrepared, executePrepare]

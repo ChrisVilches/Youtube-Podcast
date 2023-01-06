@@ -6,6 +6,9 @@ import dotenv from 'dotenv'
 import { downloadController, prepareController } from './controllers/download'
 import { showPlaylistInfoController } from './controllers/playlist'
 import { homeController } from './controllers/misc'
+import morgan from 'morgan'
+import { join } from 'path'
+import { createWriteStream } from 'fs'
 
 dotenv.config()
 
@@ -13,6 +16,9 @@ const app: Express = express()
 
 const port = Number(process.env.PORT)
 
+const accessLogStream = createWriteStream(join(__dirname, '../logs', `${process.env.NODE_ENV as string}.log`), { flags: 'a' })
+
+app.use(morgan('combined', { stream: accessLogStream }))
 app.get('/', homeController)
 app.get('/download', downloadController)
 app.get('/prepare', prepareController)

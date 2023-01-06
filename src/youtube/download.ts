@@ -5,6 +5,7 @@ import { DownloadOptions } from 'youtubei.js/dist/src/parser/youtube/VideoInfo'
 import path from 'path'
 import { withNamedLock } from './withNamedLock'
 import { isFileAlreadyDownloaded } from '../storage/isFileAlreadyDownloaded'
+import Thumbnail from 'youtubei.js/dist/src/parser/classes/misc/Thumbnail'
 
 // TODO: There should be a video length limit. Also avoid downloading streams, etc.
 // TODO: Should I memoize the cache object?
@@ -19,16 +20,24 @@ const DOWNLOAD_OPTIONS: DownloadOptions = {
   format: 'mp4'
 }
 
-export async function getBasicInfo (videoId: string): Promise<object> {
+interface VideoBasicInfo {
+  id: string
+  title: string
+  description: string
+  thumbnails: Thumbnail[]
+}
+
+// TODO: This should return an object using an interface.
+export async function getBasicInfo (videoId: string): Promise<VideoBasicInfo> {
   const yt = await Innertube.create({ cache: new UniversalCache() })
   const data = await yt.getBasicInfo(videoId)
   const { id, title, short_description: description, thumbnail: thumbnails } = data.basic_info
 
   return {
-    id,
-    title,
-    description,
-    thumbnails
+    id: id as string,
+    title: title ?? '',
+    description: description ?? '',
+    thumbnails: thumbnails ?? []
   }
 }
 
@@ -87,7 +96,7 @@ async function downloadVideoToAudioAux (videoId: string, videoTitle: string): Pr
 //       But I don't know how to get the full size.
 // TODO: Should this return "false" when the download fails?
 export async function downloadVideoToAudio (videoId: string, videoTitle: string): Promise<void> {
-  return await withNamedLock(videoId, async () => await downloadVideoToAudioAux(videoId, videoTitle))
+  await withNamedLock(videoId, async () => await downloadVideoToAudioAux(videoId, videoTitle))
 }
 
 export function videoIdFromURL (url: string): string {

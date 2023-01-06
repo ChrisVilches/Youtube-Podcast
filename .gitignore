@@ -3,3 +3,5 @@ node_modules
 dist
 files/*
 !files/.gitkeep
+logs/*
+!logs/.gitkeep
