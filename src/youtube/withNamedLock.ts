@@ -1,12 +1,12 @@
-import { createClient } from 'redis'
+import { createClient, RedisClientType } from 'redis'
 import redisLock from 'redis-lock'
 
 // TODO: Should this number have a different value?
 const LOCK_TIMEOUT = 1000 * 60 * 15
 
-let client = null
+let client: RedisClientType | null = null
 
-const getClient = async () => {
+const getClient = async (): Promise<RedisClientType> => {
   if (client !== null) {
     return client
   }

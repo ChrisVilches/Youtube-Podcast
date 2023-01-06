@@ -83,7 +83,7 @@ async function downloadVideoToAudioAux (videoId: string, videoTitle: string): Pr
 //       But I don't know how to get the full size.
 // TODO: Should this return "false" when the download fails?
 export async function downloadVideoToAudio (videoId: string, videoTitle: string): Promise<void> {
-  return await withNamedLock(videoId, () => downloadVideoToAudioAux(videoId, videoTitle))
+  return await withNamedLock(videoId, async () => await downloadVideoToAudioAux(videoId, videoTitle))
 }
 
 export function videoIdFromURL (url: string): string {
