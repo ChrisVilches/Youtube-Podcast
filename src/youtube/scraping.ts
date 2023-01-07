@@ -42,6 +42,9 @@ export async function getBasicInfo (videoId: string): Promise<VideoBasicInfo> {
 
   // TODO: "is_live_content" may be a video that was originally a stream but finished and is now a video.
   //       I think the best way to determine if it's an ongoing stream is to use the "duration: NaN" condition.
+  //       But also it'd be best to change the "isLive" and use something like "Has a finite duration" or something like that,
+  //       because duration=NaN doesn't necessarily mean it's a live stream.
+  //       Then test downloading a short video that was originally published as a livestream.
   const { id, title, duration, short_description: description, thumbnail: thumbnails, is_live_content: isLive } = data.basic_info
 
   const lengthBytes: number | undefined = data.streaming_data?.adaptive_formats.filter((x: any) => x.mime_type.startsWith('audio/mp4'))[0]?.content_length

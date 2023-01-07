@@ -8,7 +8,7 @@ import { homeController } from './controllers/misc'
 import morgan from 'morgan'
 import { errorHandler } from './middlewares/errorHandler'
 import createError from 'http-errors'
-import { videoInfoController } from './controllers/videoInfo'
+import { videoInfoRawController } from './controllers/videoInfoRaw'
 dotenv.config()
 
 const app: Express = express()
@@ -18,7 +18,7 @@ const port = Number(process.env.PORT)
 app.use(morgan('combined'))
 
 app.get('/', homeController)
-app.get('/info', videoInfoController)
+app.get('/info', videoInfoRawController)
 app.get('/download', downloadController)
 app.post('/prepare', prepareController)
 app.get('/playlist/:id', showPlaylistInfoController)

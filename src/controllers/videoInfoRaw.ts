@@ -9,4 +9,4 @@ const getVideoInfo = async (req: Request, res: Response, next: NextFunction): Pr
   res.json(infoRaw)
 }
 
-export const videoInfoController = [requireVideoId, getVideoInfo]
+export const videoInfoRawController = [requireVideoId, getVideoInfo]
