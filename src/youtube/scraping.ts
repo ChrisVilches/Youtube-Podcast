@@ -1,7 +1,7 @@
 import { Innertube, UniversalCache } from 'youtubei.js'
 import fs from 'fs'
 import { streamToIterable } from 'youtubei.js/dist/src/utils/Utils'
-import { DownloadOptions } from 'youtubei.js/dist/src/parser/youtube/VideoInfo'
+import VideoInfo, { DownloadOptions } from 'youtubei.js/dist/src/parser/youtube/VideoInfo'
 import path from 'path'
 import { isFileAlreadyDownloaded } from '../services/storage/file-downloaded'
 import Thumbnail from 'youtubei.js/dist/src/parser/classes/misc/Thumbnail'
@@ -31,9 +31,15 @@ interface PlaylistInfo {
   items: VideoBasicInfo[]
 }
 
+export async function getBasicInfoRaw (videoId: string): Promise<VideoInfo> {
+  const yt = await getInnertube()
+  return await yt.getBasicInfo(videoId)
+}
+
 export async function getBasicInfo (videoId: string): Promise<VideoBasicInfo> {
   const yt = await getInnertube()
-  const data = await yt.getBasicInfo(videoId)
+  const data: VideoInfo = await yt.getBasicInfo(videoId)
+
   // TODO: "is_live_content" may be a video that was originally a stream but finished and is now a video.
   //       I think the best way to determine if it's an ongoing stream is to use the "duration: NaN" condition.
   const { id, title, duration, short_description: description, thumbnail: thumbnails, is_live_content: isLive } = data.basic_info
