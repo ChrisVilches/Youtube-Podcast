@@ -13,6 +13,7 @@
   "license": "ISC",
   "dependencies": {
     "bull": "^4.10.2",
+    "content-disposition": "^0.5.4",
     "cookie-parser": "~1.4.4",
     "debug": "~2.6.9",
     "dotenv": "^16.0.3",
@@ -27,9 +28,9 @@
   "devDependencies": {
     "@types/bull": "^4.10.0",
     "@types/express": "^4.17.15",
-    "@types/node": "^18.11.18",
     "@types/http-errors": "^2.0.1",
     "@types/morgan": "^1.9.4",
+    "@types/node": "^18.11.18",
     "@types/rx": "^4.1.2",
     "concurrently": "^7.6.0",
     "nodemon": "^2.0.20",

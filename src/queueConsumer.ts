@@ -58,6 +58,8 @@ const consumeSubjectPrintCompletion = (subject: Subject<number>, scrapedTotalByt
     complete: resolve,
     error: (e: any) => {
       console.log(`❌ ${e as string}`)
+      console.log('❌ Details:')
+      console.log(e.stack)
       resolve()
     }
   })
@@ -95,7 +97,11 @@ const queueConsumer = async (): Promise<void> => {
     const { id: videoId }: { id: string } = data
     currentVideoId = videoId
     console.log(`⚡ Processing ${videoId}`)
-    await processVideoId(videoId)
+    try {
+      await processVideoId(videoId)
+    } finally {
+      currentVideoId = null
+    }
     console.log(`✅ Processed ${videoId}`)
     console.log()
   })
@@ -117,6 +123,7 @@ async function signalHandler (): Promise<void> {
   if (currentVideoId !== null) {
     await Promise.all([
       removeFile(currentVideoId),
+      removeFile(`${currentVideoId}.tmp`),
       removeProgress(currentVideoId)
       // TODO: The job remains "active", I think. Should also cleanup that as well.
     ])

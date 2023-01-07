@@ -6,6 +6,7 @@ import path from 'path'
 import { isFileAlreadyDownloaded } from '../services/storage/file-downloaded'
 import Thumbnail from 'youtubei.js/dist/src/parser/classes/misc/Thumbnail'
 import { Subject } from 'rxjs'
+import { cleanTitle } from './util'
 
 const DOWNLOAD_DIR = './files'
 const DOWNLOAD_OPTIONS: DownloadOptions = {
@@ -67,10 +68,12 @@ async function downloadVideoToAudioAux (videoId: string, videoTitle: string, sub
     throw new Error(`Video ${videoId} was already downloaded`)
   }
 
+  videoTitle = cleanTitle(videoTitle)
+
   const yt = await getInnertube()
 
   const stream = await yt.download(videoId, DOWNLOAD_OPTIONS)
-  const dir = path.join(DOWNLOAD_DIR, videoId)
+  const dir = path.join(DOWNLOAD_DIR, `${videoId}.tmp`)
 
   ensureDir(dir)
   const finalFile = `${path.join(dir, videoTitle)}.m4a`
@@ -84,6 +87,8 @@ async function downloadVideoToAudioAux (videoId: string, videoTitle: string, sub
     completeBytes += chunk.byteLength
     subject.next(completeBytes)
   }
+
+  fs.renameSync(path.join(DOWNLOAD_DIR, `${videoId}.tmp`), path.join(DOWNLOAD_DIR, `${videoId}`))
 }
 
 const validateDuration = (duration: number): void => {

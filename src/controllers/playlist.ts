@@ -12,7 +12,7 @@ export const playlistPrepareAllController = async (req: Request, res: Response):
   const ids = playlist.items.map((item: any) => item.id)
 
   for (const id of ids) {
-    await getVideosQueue().add({ id })
+    await getVideosQueue().add({ id }, { jobId: id })
   }
   res.json(ids)
 }

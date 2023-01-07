@@ -2,7 +2,9 @@ import Bull from 'bull'
 import { redisUrl } from '../redis/redisUrl'
 
 const connectQueue = (name: string): Bull.Queue => {
-  const queue: Bull.Queue = new Bull(name, redisUrl())
+  const queue: Bull.Queue = new Bull(name, redisUrl(), {
+    defaultJobOptions: { removeOnComplete: true }
+  })
 
   return queue
 }

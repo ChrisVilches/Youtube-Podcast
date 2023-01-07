@@ -5,9 +5,9 @@ export const forceDownloadAgain = async (req: Request, res: Response, next: Next
   const videoId: string = res.locals.videoId
   console.assert(videoId.length)
 
-  const beingPrepared: boolean = res.locals.beingPrepared
+  const inProgress = res.locals.inProgress as boolean
 
-  if (!beingPrepared && 'force' in req.query) {
+  if (!inProgress && 'force' in req.query) {
     await removeFile(videoId)
   }
 
