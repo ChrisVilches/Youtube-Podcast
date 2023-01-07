@@ -5,5 +5,5 @@ export const error = (err: any, _req: Request, res: Response, _next: NextFunctio
   const errorMessage = err.status < 500 ? err : {}
 
   res.status(err.status)
-  res.send(errorMessage)
+  res.json(errorMessage)
 }

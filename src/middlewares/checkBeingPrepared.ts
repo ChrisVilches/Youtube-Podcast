@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express'
-import { getProgress } from '../redis/videoProgress'
+import { getProgress } from '../services/videoProgress'
 
 export const checkBeingPrepared = async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
   const videoId: string = res.locals.videoId

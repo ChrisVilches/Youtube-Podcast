@@ -3,8 +3,7 @@ import fs from 'fs'
 import { streamToIterable } from 'youtubei.js/dist/src/utils/Utils'
 import { DownloadOptions } from 'youtubei.js/dist/src/parser/youtube/VideoInfo'
 import path from 'path'
-import { withNamedLock } from './withNamedLock'
-import { isFileAlreadyDownloaded } from '../storage/file-downloaded'
+import { isFileAlreadyDownloaded } from '../services/storage/file-downloaded'
 import Thumbnail from 'youtubei.js/dist/src/parser/classes/misc/Thumbnail'
 import { Subject } from 'rxjs'
 
@@ -34,6 +33,8 @@ interface PlaylistInfo {
 export async function getBasicInfo (videoId: string): Promise<VideoBasicInfo> {
   const yt = await getInnertube()
   const data = await yt.getBasicInfo(videoId)
+  // TODO: "is_live_content" may be a video that was originally a stream but finished and is now a video.
+  //       I think the best way to determine if it's an ongoing stream is to use the "duration: NaN" condition.
   const { id, title, duration, short_description: description, thumbnail: thumbnails, is_live_content: isLive } = data.basic_info
 
   const lengthBytes: number | undefined = data.streaming_data?.adaptive_formats.filter((x: any) => x.mime_type.startsWith('audio/mp4'))[0]?.content_length
@@ -96,34 +97,14 @@ const validateDuration = (duration: number): void => {
 }
 
 export async function downloadVideoToAudio ({ id, title, duration }: VideoBasicInfo, subject: Subject<number>): Promise<void> {
-  await withNamedLock(id, async () => {
+  try {
     validateDuration(duration)
     await downloadVideoToAudioAux(id, title, subject)
-  }).catch(e => subject.error(e))
+  } catch (e) {
+    subject.error(e)
+  }
 
   subject.complete()
-}
-
-/*
-export function UNUSED_FOR_NOW_videoIdFromURL (url: string): string {
-  const u = new URL(url)
-  const v: string = u.searchParams.get('v') ?? ''
-  if (v === '') {
-    throw new Error(`URL "${url}" is not a valid Youtube url`)
-  }
-  return v
-}
-*/
-
-// TODO: implement
-// TODO: I'll probably not use this one. Delete this, the controller, and the API middleware, etc.
-export async function getChannel (id: string): Promise<null> {
-  const yt = await getInnertube()
-  console.log(`id: [${id}]`)
-  const res = await yt.getChannel(id)
-  console.log('Maybe it worked? lol')
-  console.log(res)
-  return null
 }
 
 export async function getPlayList (id: string): Promise<PlaylistInfo> {

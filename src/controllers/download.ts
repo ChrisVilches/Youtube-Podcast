@@ -1,12 +1,14 @@
 import { NextFunction, Request, Response } from 'express'
-import { getDownloadedFilename } from '../storage/file-downloaded'
+import { getDownloadedFilename } from '../services/storage/file-downloaded'
 import { join } from 'path'
 import { checkAlreadyPrepared } from '../middlewares/checkAlreadyPrepared'
 import { requireVideoId } from '../middlewares/requireVideoId'
 import { getVideosQueue } from '../queues/getVideosQueue'
 import createError from 'http-errors'
 import { checkBeingPrepared } from '../middlewares/checkBeingPrepared'
-import { updateProgress } from '../redis/videoProgress'
+import { forceDownloadAgain } from '../middlewares/forceDownloadAgain'
+import { updateProgress } from '../services/videoProgress'
+import { messageResponse } from '../middlewares/messageResponse'
 
 // TODO: File storage must be improved. Storing the files here is not good.
 
@@ -41,7 +43,7 @@ const executeDownload = async (req: Request, res: Response, next: NextFunction):
 
 const executePrepare = async (_req: Request, res: Response): Promise<void> => {
   if (res.locals.beingPrepared as boolean) {
-    res.send(`Video is already being prepared (${res.locals.progress as number}%). Wait a few moments.`)
+    res.json(messageResponse(`Video is already being prepared (${res.locals.progress as number}%). Wait a few moments.`))
     return
   }
 
@@ -50,11 +52,8 @@ const executePrepare = async (_req: Request, res: Response): Promise<void> => {
   await getVideosQueue().add({ id: videoId })
 
   await updateProgress(videoId, 0)
-  res.send(`Download has been started. Try using /download?v=${videoId} after a few moments in order to download`)
+  res.json(messageResponse(`Download has been started. Try using /download?v=${videoId} after a few moments in order to download`))
 }
 
 export const downloadController = [requireVideoId, checkBeingPrepared, executeDownload]
-
-// TODO: The only problem of removing the "setVideoBasicInfo" middleware is that now we cannot tell the
-//       user if the video is available or not. It's processed later in the worker.
-export const prepareController = [requireVideoId, checkBeingPrepared, checkAlreadyPrepared, executePrepare]
+export const prepareController = [requireVideoId, checkBeingPrepared, forceDownloadAgain, checkAlreadyPrepared, executePrepare]
