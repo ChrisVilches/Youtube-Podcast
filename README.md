@@ -32,4 +32,9 @@ npm run dev:worker
 * TypeScript
 * Node.js + Express
 * Redis
+* MinIO
 * Other libraries (Bull, Youtube.js, RxJS, etc) 
+
+## Limitations
+
+* Videos may be unavailable for download depending on the server location (region).
