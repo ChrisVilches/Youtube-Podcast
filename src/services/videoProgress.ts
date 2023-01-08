@@ -1,22 +1,17 @@
-import { getRedisClient } from '../redis/getRedisClient'
+import { getVideosQueue } from '../queues/getVideosQueue'
 
 export const updateProgress = async (videoId: string, progress: number): Promise<void> => {
-  const redis = await getRedisClient()
-  await redis.set(`videoDownloadProgress:${videoId}`, progress)
-}
-
-export const removeProgress = async (videoId: string): Promise<void> => {
-  const redis = await getRedisClient()
-  await redis.del(`videoDownloadProgress:${videoId}`)
+  const job = await getVideosQueue().getJob(videoId)
+  await job?.progress(progress)
 }
 
 export const getProgress = async (videoId: string): Promise<number | null> => {
-  const redis = await getRedisClient()
-  const value = await redis.get(`videoDownloadProgress:${videoId}`)
+  const job = await getVideosQueue().getJob(videoId)
 
-  if (typeof value === 'string' && value.length > 0) {
-    return Number(value)
+  if (job === null) {
+    return null
   }
 
-  return null
+  const result: number = await job?.progress()
+  return result
 }

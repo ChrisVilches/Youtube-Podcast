@@ -2,37 +2,24 @@
 
 import dotenv from 'dotenv'
 import { Subject } from 'rxjs/internal/Subject'
-import { map, concatMap, distinct } from 'rxjs/operators'
+import { map, concatMap, distinct, first } from 'rxjs/operators'
 import { getVideosQueue } from './queues/getVideosQueue'
-import { removeProgress, updateProgress } from './services/videoProgress'
-import { removeFile } from './services/storage/removeFile'
+import { removeVideoJob } from './queues/removeVideoJob'
+import { updateProgress } from './services/videoProgress'
+import { bytesToMb } from './util/bytesToMb'
+import { formatDuration } from './util/format'
 import { downloadVideoToAudio, getBasicInfo } from './youtube/scraping'
 
 dotenv.config()
 
-const formatDuration = (seconds: number): string => {
-  if (isNaN(seconds)) {
-    return 'N/A'
-  }
-
-  return new Date(seconds * 1000).toISOString().slice(11, 19)
-}
-
-const bytesToMb = (bytes: number): number => bytes / 1000000
-
 const consumeSubjectUpdateProgress = (videoId: string, subject: Subject<number>, scrapedTotalBytes: number): Promise<void> => new Promise(resolve => {
-  const finish = (): void => {
-    removeProgress(videoId).catch(console.log)
-    resolve()
-  }
-
   subject.pipe(
     map((b: number) => Math.floor(100 * b / scrapedTotalBytes)),
     distinct(),
     concatMap((p: number) => updateProgress(videoId, p))
   ).subscribe({
-    complete: finish,
-    error: finish
+    complete: resolve,
+    error: resolve
   })
 })
 
@@ -73,13 +60,12 @@ const processVideoId = async (videoId: string): Promise<void> => {
     const info = await getBasicInfo(videoId)
 
     const { title: videoTitle, duration, lengthBytes } = info
+    scrapedTotalBytes = lengthBytes ?? Infinity
 
     console.log(`📄 ${videoTitle}`)
     console.log(`🕓 ${formatDuration(duration)}`)
 
-    downloadVideoToAudio(info, subject).catch(console.log)
-
-    scrapedTotalBytes = lengthBytes ?? Infinity
+    downloadVideoToAudio(info, subject).catch(e => subject.error(e))
   } catch (e) {
     subject.error(e)
   }
@@ -90,18 +76,14 @@ const processVideoId = async (videoId: string): Promise<void> => {
   ])
 }
 
-let currentVideoId: string | null = null
+let currentVideoId: string = ''
 
 const queueConsumer = async (): Promise<void> => {
   await getVideosQueue().process(async ({ data }) => {
     const { id: videoId }: { id: string } = data
     currentVideoId = videoId
     console.log(`⚡ Processing ${videoId}`)
-    try {
-      await processVideoId(videoId)
-    } finally {
-      currentVideoId = null
-    }
+    await processVideoId(videoId)
     console.log(`✅ Processed ${videoId}`)
     console.log()
   })
@@ -109,29 +91,36 @@ const queueConsumer = async (): Promise<void> => {
 
 queueConsumer().catch(console.log)
 
-let cleanupStarted = false
+const cleanup = async (videoId: string): Promise<void> => {
+  const tasks = Promise.all([
+    // TODO: Sometimes the jobs are automatically retried, but I'm not sure under what conditions.
+    removeVideoJob(videoId)
+  ])
 
-async function signalHandler (): Promise<void> {
-  if (cleanupStarted) {
-    return
+  try {
+    await tasks
+    console.log('Cleanup OK')
+  } catch (e) {
+    console.log(e)
   }
 
-  cleanupStarted = true
+  // TODO: The job remains "active", I think. Should also cleanup that as well.
+  // TODO: Sometimes the jobs get marked as "failed".
+}
+
+const gracefulShutdown = async (): Promise<void> => {
   console.log()
   console.log('Graceful shutdown...')
-
-  if (currentVideoId !== null) {
-    await Promise.all([
-      removeFile(currentVideoId),
-      removeFile(`${currentVideoId}.tmp`),
-      removeProgress(currentVideoId)
-      // TODO: The job remains "active", I think. Should also cleanup that as well.
-    ])
-  }
-
+  await cleanup(currentVideoId)
   process.exit()
 }
 
-process.on('SIGINT', () => { signalHandler().catch(console.log) })
-process.on('SIGTERM', () => { signalHandler().catch(console.log) })
-process.on('SIGQUIT', () => { signalHandler().catch(console.log) })
+const shutdown = new Subject<boolean>()
+
+shutdown.pipe(first()).subscribe({
+  next: () => { gracefulShutdown().catch(console.log) }
+})
+
+process.on('SIGINT', () => { shutdown.next(true) })
+process.on('SIGTERM', () => { shutdown.next(true) })
+process.on('SIGQUIT', () => { shutdown.next(true) })

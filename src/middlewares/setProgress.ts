@@ -5,7 +5,9 @@ export const setProgress = async (_req: Request, res: Response, next: NextFuncti
   const videoId: string = res.locals.videoId
   console.assert(videoId.length)
 
-  res.locals.progress = await getProgress(videoId)
+  const progress: number | null = await getProgress(videoId)
+
+  res.locals.progress = progress
   res.locals.inProgress = res.locals.progress !== null
 
   next()

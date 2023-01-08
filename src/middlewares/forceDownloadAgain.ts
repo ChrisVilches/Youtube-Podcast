@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express'
-import { removeFile } from '../services/storage/removeFile'
+import { removeVideo } from '../services/storage/minioUpload'
 
 export const forceDownloadAgain = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const videoId: string = res.locals.videoId
@@ -8,7 +8,7 @@ export const forceDownloadAgain = async (req: Request, res: Response, next: Next
   const inProgress = res.locals.inProgress as boolean
 
   if (!inProgress && 'force' in req.query) {
-    await removeFile(videoId)
+    await removeVideo(videoId)
   }
 
   next()
