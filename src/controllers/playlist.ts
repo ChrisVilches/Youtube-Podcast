@@ -1,4 +1,5 @@
 import { Request, Response } from 'express'
+import { VideoBasicInfo } from '../models/VideoBasicInfo'
 import { addVideoJob } from '../queues/addVideoJob'
 import { videoExists } from '../services/storage/upload'
 import { getProgress } from '../services/videoProgress'
@@ -11,7 +12,7 @@ export const showPlaylistInfoController = async (req: Request, res: Response): P
 
 export const playlistPrepareAllController = async (req: Request, res: Response): Promise<void> => {
   const playlist = await getPlayList(req.params.id)
-  const ids = playlist.items.map((item: any) => item.id)
+  const ids: string[] = playlist.items.map((item: VideoBasicInfo) => item.videoId)
 
   const result: any = {}
 

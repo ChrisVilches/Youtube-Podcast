@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@typegoose/typegoose": "^10.0.0",
     "bull": "^4.10.2",
     "content-disposition": "^0.5.4",
     "cookie-parser": "~1.4.4",

@@ -4,8 +4,7 @@ import VideoInfo, { DownloadOptions } from 'youtubei.js/dist/src/parser/youtube/
 import Thumbnail from 'youtubei.js/dist/src/parser/classes/misc/Thumbnail'
 import { Subject } from 'rxjs'
 import { persistVideo, videoExists } from '../services/storage/upload'
-import { validateVideoBasicInfo, VideoBasicInfo } from './VideoBasicInfo'
-import { upsertBasicInfo } from '../services/videoInfo'
+import { VideoBasicInfo, VideoBasicInfoModel } from '../models/VideoBasicInfo'
 
 const DOWNLOAD_OPTIONS: DownloadOptions = {
   type: 'audio',
@@ -29,18 +28,18 @@ export async function getBasicInfo (videoId: string): Promise<VideoBasicInfo> {
   const yt = await getInnertube()
   const data: VideoInfo = await yt.getBasicInfo(videoId)
 
-  const { id, title, duration, short_description: description, thumbnail: thumbnails } = data.basic_info
+  const { title, duration, short_description: description, thumbnail: thumbnails } = data.basic_info
 
   const lengthBytes: number | undefined = data.streaming_data?.adaptive_formats.filter((x: any) => x.mime_type.startsWith('audio/mp4'))[0]?.content_length
 
-  return {
-    id: id as string,
-    title: title ?? '',
+  return new VideoBasicInfoModel({
+    videoId,
     duration: duration ?? 0,
+    title: title ?? '',
     description: description ?? '',
     thumbnails: thumbnails ?? [],
     lengthBytes
-  }
+  })
 }
 
 let innertube: Innertube | null = null
@@ -72,14 +71,22 @@ async function download (videoId: string, subject: Subject<number>): Promise<Buf
   return Buffer.concat(data)
 }
 
-export async function downloadAndPersist (videoInfo: VideoBasicInfo, subject: Subject<number>): Promise<void> {
-  const { id, title } = videoInfo
+export async function downloadAndPersist (info: VideoBasicInfo, subject: Subject<number>): Promise<void> {
+  const { videoId, title, duration, description, lengthBytes, thumbnails } = info
 
-  await upsertBasicInfo(id, videoInfo)
+  // TODO: This fails because the info object contains a _id, and that cannot be included in
+  //       the payload. Find an easier way.
+  //       (But I already tried, and there's no easy way I think). The problem is that I do something
+  //       that's not very "the Typegoose way", which is creating a document without saving it (similar
+  //       to the "build" method in FactoryGirl)
 
-  validateVideoBasicInfo(videoInfo)
-  const binary: Buffer = await download(id, subject)
-  await persistVideo(id, title, binary)
+  const payload = { videoId, title, duration, description, lengthBytes, thumbnails }
+
+  await VideoBasicInfoModel.updateOne({ videoId }, payload, { upsert: true })
+  info.validateCanDownload()
+
+  const binary: Buffer = await download(videoId, subject)
+  await persistVideo(videoId, title, binary)
   subject.complete()
 }
 
@@ -87,18 +94,16 @@ export async function getPlayList (id: string): Promise<PlaylistInfo> {
   const yt = await getInnertube()
   const res = await yt.getPlaylist(id)
 
-  const result: PlaylistInfo = {
+  return {
     id: res.endpoint.payload.playlistId,
     title: res.info.title,
     author: res.info.author.name,
-    items: res.items.map((item: any): VideoBasicInfo => ({
-      id: item.id as string,
+    items: res.items.map((item: any): VideoBasicInfo => new VideoBasicInfoModel({
+      videoId: item.id,
       title: item.title.runs[0].text as string,
-      duration: item.duration.seconds,
+      duration: item.duration.seconds as number,
       description: '',
       thumbnails: item.thumbnails as Thumbnail[]
     }))
   }
-
-  return result
 }
