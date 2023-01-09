@@ -74,12 +74,6 @@ async function download (videoId: string, subject: Subject<number>): Promise<Buf
 export async function downloadAndPersist (info: VideoBasicInfo, subject: Subject<number>): Promise<void> {
   const { videoId, title, duration, description, lengthBytes, thumbnails } = info
 
-  // TODO: This fails because the info object contains a _id, and that cannot be included in
-  //       the payload. Find an easier way.
-  //       (But I already tried, and there's no easy way I think). The problem is that I do something
-  //       that's not very "the Typegoose way", which is creating a document without saving it (similar
-  //       to the "build" method in FactoryGirl)
-
   const payload = { videoId, title, duration, description, lengthBytes, thumbnails }
 
   await VideoBasicInfoModel.updateOne({ videoId }, payload, { upsert: true })

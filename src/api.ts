@@ -9,9 +9,10 @@ import morgan from 'morgan'
 import { errorHandler } from './middlewares/errorHandler'
 import createError from 'http-errors'
 import { videoInfoRawController } from './controllers/videoInfoRaw'
-import { connect } from 'mongoose'
 import { videoInfoController } from './controllers/videoInfo'
+import { initializeMongo } from './models/initializeMongo'
 dotenv.config()
+initializeMongo().catch(console.log)
 
 const app: Express = express()
 
@@ -32,7 +33,3 @@ app.use(errorHandler)
 app.listen(port, () => {
   console.log(`⚡️ [${process.env.NODE_ENV ?? ''}] Server is running at port ${port}`)
 })
-
-connect('mongodb://localhost:27017/youtube-podcast')
-  .then(() => console.log('Mongo connected'))
-  .catch(console.log)

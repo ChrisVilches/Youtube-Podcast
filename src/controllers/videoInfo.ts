@@ -19,7 +19,6 @@ const getVideoInfo = async (req: Request, res: Response, next: NextFunction): Pr
     return
   }
 
-  // TODO: Make sure the _id is not present in results (from API videoInfo)
   res.json({
     metadata,
     storage: await videoStorageSummary(videoId)

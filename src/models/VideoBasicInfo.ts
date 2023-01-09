@@ -1,6 +1,6 @@
-import { getModelForClass, index, prop } from '@typegoose/typegoose'
-import { TimeStamps } from '@typegoose/typegoose/lib/defaultClasses'
+import { getModelForClass, modelOptions, prop, Severity } from '@typegoose/typegoose'
 import Thumbnail from 'youtubei.js/dist/src/parser/classes/misc/Thumbnail'
+import { Base } from './Base'
 
 const validateDuration = (duration: number): void => {
   if (duration > Number(process.env.MAX_VIDEO_LENGTH_SECONDS)) {
@@ -18,11 +18,15 @@ const validateLengthBytes = (lengthBytes?: number): void => {
   }
 }
 
-// TODO: What is the "1"??
 // TODO: I think it's necessary to also execute the "ensureIndexes" method on the model.
-@index({ videoId: 1 }, { unique: true })
-export class VideoBasicInfo extends TimeStamps {
-  @prop({ required: true })
+// TODO: Does this index work? Make sure it does, because I only added "unique" and not "index" (unique should be enough)
+@modelOptions({
+  options: {
+    allowMixed: Severity.ALLOW
+  }
+})
+export class VideoBasicInfo extends Base {
+  @prop({ required: true, unique: true })
   public videoId!: string
 
   @prop({ required: true })

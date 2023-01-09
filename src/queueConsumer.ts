@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/promise-function-async */
 
 import dotenv from 'dotenv'
-import { connect } from 'mongoose'
 import { Subject } from 'rxjs/internal/Subject'
 import { map, concatMap, distinct, first } from 'rxjs/operators'
+import { initializeMongo } from './models/initializeMongo'
 import { getVideosQueue } from './queues/getVideosQueue'
 import { removeVideoJob } from './queues/removeVideoJob'
 import { updateProgress } from './services/videoProgress'
@@ -15,6 +15,7 @@ import { downloadAndPersist, getBasicInfo } from './youtube/scraping'
 //       the shell prompt ($) is displayed.
 
 dotenv.config()
+initializeMongo().catch(console.log)
 
 const consumeSubjectUpdateProgress = (videoId: string, subject: Subject<number>, scrapedTotalBytes: number): Promise<void> => new Promise(resolve => {
   subject.pipe(
@@ -128,8 +129,3 @@ shutdown.pipe(first()).subscribe({
 process.on('SIGINT', () => { shutdown.next(true) })
 process.on('SIGTERM', () => { shutdown.next(true) })
 process.on('SIGQUIT', () => { shutdown.next(true) })
-
-// TODO: Move this mongo connection to a service or something
-connect('mongodb://localhost:27017/youtube-podcast')
-  .then(() => console.log('Mongo connected'))
-  .catch(console.log)
