@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express'
-import { videoExists } from '../services/storage/minioUpload'
+import { videoExists } from '../services/storage/upload'
 
 export const setVideoAlreadyPrepared = async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
   const videoId: string = res.locals.videoId

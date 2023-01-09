@@ -6,7 +6,7 @@ import { setProgress } from '../middlewares/setProgress'
 import { forceDownloadAgain } from '../middlewares/forceDownloadAgain'
 import { messageResponse } from '../middlewares/messageResponse'
 import contentDisposition from 'content-disposition'
-import { videoStream, videoOriginalTitle } from '../services/storage/minioUpload'
+import { videoStream, videoOriginalTitle } from '../services/storage/upload'
 import { cleanTitle } from '../util/format'
 import { addVideoJob } from '../queues/addVideoJob'
 

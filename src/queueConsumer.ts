@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/promise-function-async */
 
 import dotenv from 'dotenv'
+import { connect } from 'mongoose'
 import { Subject } from 'rxjs/internal/Subject'
 import { map, concatMap, distinct, first } from 'rxjs/operators'
 import { getVideosQueue } from './queues/getVideosQueue'
@@ -8,7 +9,10 @@ import { removeVideoJob } from './queues/removeVideoJob'
 import { updateProgress } from './services/videoProgress'
 import { bytesToMb } from './util/bytesToMb'
 import { formatDuration } from './util/format'
-import { downloadVideoToAudio, getBasicInfo } from './youtube/scraping'
+import { downloadAndPersist, getBasicInfo } from './youtube/scraping'
+
+// TODO: There's a bug where the program keeps outputting even after CTRL+C and even after
+//       the shell prompt ($) is displayed.
 
 dotenv.config()
 
@@ -65,7 +69,7 @@ const processVideoId = async (videoId: string): Promise<void> => {
     console.log(`📄 ${videoTitle}`)
     console.log(`🕓 ${formatDuration(duration)}`)
 
-    downloadVideoToAudio(info, subject).catch(e => subject.error(e))
+    downloadAndPersist(info, subject).catch(e => subject.error(e))
   } catch (e) {
     subject.error(e)
   }
@@ -124,3 +128,8 @@ shutdown.pipe(first()).subscribe({
 process.on('SIGINT', () => { shutdown.next(true) })
 process.on('SIGTERM', () => { shutdown.next(true) })
 process.on('SIGQUIT', () => { shutdown.next(true) })
+
+// TODO: Move this mongo connection to a service or something
+connect('mongodb://localhost:27017/youtube-podcast')
+  .then(() => console.log('Mongo connected'))
+  .catch(console.log)

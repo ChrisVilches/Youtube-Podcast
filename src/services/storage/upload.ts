@@ -2,6 +2,8 @@ import { UploadedObjectInfo } from 'minio'
 import internal from 'stream'
 import { BUCKET_NAME, getMinioClient } from './minioClient'
 
+// TODO: There's room for improving the name of this module.
+
 export const videoExists = async (videoId: string): Promise<boolean> => {
   const client = await getMinioClient()
   try {
@@ -12,6 +14,13 @@ export const videoExists = async (videoId: string): Promise<boolean> => {
   }
 }
 
+// TODO: This could eventually be obtained from Mongo.
+//       That's probably a bit better than having to encode and decode the title,
+//       since it's not necessary in Mongo.
+//       However, consider that I also must store this metadata anyway, because
+//       that makes it easier to work with Minio (when using the dashboard, etc)
+//       so there's no reason why I should avoid fetching the name from this source.
+//       Using Minio's metadata isn't very different from using Mongo.
 export const videoOriginalTitle = async (videoId: string): Promise<string> => {
   const client = await getMinioClient()
   const stat = await client.statObject(BUCKET_NAME, videoId)

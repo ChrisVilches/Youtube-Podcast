@@ -31,9 +31,10 @@ npm run dev:worker
 
 * TypeScript
 * Node.js + Express
+* MongoDB
 * Redis
 * MinIO
-* Other libraries (Bull, Youtube.js, RxJS, etc) 
+* Other libraries (Bull, Youtube.js, RxJS, Mongoose, etc)
 
 ## Limitations
 

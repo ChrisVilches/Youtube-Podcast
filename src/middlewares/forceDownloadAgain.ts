@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express'
-import { removeVideo } from '../services/storage/minioUpload'
+import { removeVideo } from '../services/storage/upload'
 
 export const forceDownloadAgain = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const videoId: string = res.locals.videoId

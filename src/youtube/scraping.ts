@@ -3,8 +3,9 @@ import { streamToIterable } from 'youtubei.js/dist/src/utils/Utils'
 import VideoInfo, { DownloadOptions } from 'youtubei.js/dist/src/parser/youtube/VideoInfo'
 import Thumbnail from 'youtubei.js/dist/src/parser/classes/misc/Thumbnail'
 import { Subject } from 'rxjs'
-import { persistVideo, videoExists } from '../services/storage/minioUpload'
+import { persistVideo, videoExists } from '../services/storage/upload'
 import { validateVideoBasicInfo, VideoBasicInfo } from './VideoBasicInfo'
+import { upsertBasicInfo } from '../services/videoInfo'
 
 const DOWNLOAD_OPTIONS: DownloadOptions = {
   type: 'audio',
@@ -71,8 +72,10 @@ async function download (videoId: string, subject: Subject<number>): Promise<Buf
   return Buffer.concat(data)
 }
 
-export async function downloadVideoToAudio (videoInfo: VideoBasicInfo, subject: Subject<number>): Promise<void> {
+export async function downloadAndPersist (videoInfo: VideoBasicInfo, subject: Subject<number>): Promise<void> {
   const { id, title } = videoInfo
+
+  await upsertBasicInfo(id, videoInfo)
 
   validateVideoBasicInfo(videoInfo)
   const binary: Buffer = await download(id, subject)

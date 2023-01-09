@@ -1,6 +1,6 @@
 import { Request, Response } from 'express'
 import { addVideoJob } from '../queues/addVideoJob'
-import { videoExists } from '../services/storage/minioUpload'
+import { videoExists } from '../services/storage/upload'
 import { getProgress } from '../services/videoProgress'
 import { getPlayList } from '../youtube/scraping'
 
