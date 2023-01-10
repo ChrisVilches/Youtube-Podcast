@@ -6,9 +6,10 @@ import { setProgress } from '../middlewares/setProgress'
 import { forceDownloadAgain } from '../middlewares/forceDownloadAgain'
 import { messageResponse } from '../middlewares/messageResponse'
 import contentDisposition from 'content-disposition'
-import { videoStream, videoOriginalTitle } from '../services/storage/upload'
+import { videoStream, videoOriginalTitle, videoStatObject } from '../services/storage/upload'
 import { cleanTitle } from '../util/format'
 import { addVideoJob } from '../queues/addVideoJob'
+import { updateDownloadStats } from '../middlewares/updateDownloadStats'
 
 const videoToFileName = async (videoId: string, extension: string = 'm4a'): Promise<string> => {
   const originalTitle = await videoOriginalTitle(videoId)
@@ -24,12 +25,21 @@ const executeDownload = async (req: Request, res: Response, next: NextFunction):
     return
   }
 
-  res.setHeader('Content-Disposition', contentDisposition(await videoToFileName(videoId)))
-  res.setHeader('Content-Transfer-Encoding', 'binary')
-  res.setHeader('Content-Type', 'application/octet-stream')
+  const stat = await videoStatObject(videoId)
 
-  const stream = await videoStream(videoId)
-  stream.pipe(res)
+  if (stat.etag === req.headers['if-none-match']) {
+    res.sendStatus(304)
+  } else {
+    res.setHeader('ETag', stat.etag)
+    res.setHeader('Content-Disposition', contentDisposition(await videoToFileName(videoId)))
+    res.setHeader('Content-Transfer-Encoding', 'binary')
+    res.setHeader('Content-Type', 'application/octet-stream')
+
+    const stream = await videoStream(videoId)
+    stream.pipe(res)
+  }
+
+  res.on('finish', next)
 }
 
 const executePrepare = async (_req: Request, res: Response): Promise<void> => {
@@ -49,5 +59,5 @@ const executePrepare = async (_req: Request, res: Response): Promise<void> => {
   res.json(messageResponse(`Downloading (${progress}%). Try using /download?v=${videoId} after a few moments in order to download`))
 }
 
-export const downloadController = [requireVideoId, setProgress, setVideoAlreadyPrepared, executeDownload]
+export const downloadController = [requireVideoId, setProgress, setVideoAlreadyPrepared, executeDownload, updateDownloadStats]
 export const prepareController = [requireVideoId, setProgress, forceDownloadAgain, setVideoAlreadyPrepared, executePrepare]

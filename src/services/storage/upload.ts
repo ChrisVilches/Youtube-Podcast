@@ -1,4 +1,4 @@
-import { UploadedObjectInfo } from 'minio'
+import { BucketItemStat, UploadedObjectInfo } from 'minio'
 import internal from 'stream'
 import { BUCKET_NAME, getMinioClient } from './minioClient'
 
@@ -12,6 +12,11 @@ export const videoExists = async (videoId: string): Promise<boolean> => {
   } catch {
     return false
   }
+}
+
+export const videoStatObject = async (videoId: string): Promise<BucketItemStat> => {
+  const client = await getMinioClient()
+  return await client.statObject(BUCKET_NAME, videoId)
 }
 
 export const videoOriginalTitle = async (videoId: string): Promise<string> => {
