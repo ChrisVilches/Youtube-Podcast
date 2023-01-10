@@ -1,15 +1,15 @@
 import { NextFunction, Request, Response } from 'express'
-import { setVideoAlreadyPrepared } from '../middlewares/setVideoAlreadyPrepared'
-import { requireVideoId } from '../middlewares/requireVideoId'
+import { setVideoAlreadyPrepared } from '../middlewares/set-video-already-prepared'
+import { requireVideoId } from '../middlewares/require-video-id'
 import createError from 'http-errors'
-import { setProgress } from '../middlewares/setProgress'
-import { forceDownloadAgain } from '../middlewares/forceDownloadAgain'
-import { messageResponse } from '../middlewares/messageResponse'
+import { setProgress } from '../middlewares/set-progress'
+import { forceDownloadAgain } from '../middlewares/force-download-again'
+import { messageResponse } from '../middlewares/message-response'
 import contentDisposition from 'content-disposition'
-import { videoStream, videoOriginalTitle, videoStatObject } from '../services/storage/upload'
+import { videoStream, videoOriginalTitle, videoStatObject } from '../services/storage/persisted-files'
 import { cleanTitle } from '../util/format'
-import { addVideoJob } from '../queues/addVideoJob'
-import { updateDownloadStats } from '../middlewares/updateDownloadStats'
+import { updateDownloadStats } from '../middlewares/update-download-stats'
+import { addVideoJob } from '../queues/videos-queue'
 
 const videoToFileName = async (videoId: string, extension: string = 'm4a'): Promise<string> => {
   const originalTitle = await videoOriginalTitle(videoId)

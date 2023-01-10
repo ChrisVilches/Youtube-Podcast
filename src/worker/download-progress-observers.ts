@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/promise-function-async */
 
 import { concatMap, distinct, map, Subject } from 'rxjs'
-import { updateProgress } from '../services/videoProgress'
-import { bytesToMb } from '../util/bytesToMb'
+import { updateProgress } from '../services/video-progress'
+import { bytesToMb } from '../util/bytes-to-mb'
 
 export const consumeSubjectUpdateProgress = (videoId: string, subject: Subject<number>, scrapedTotalBytes: number): Promise<void> => new Promise(resolve => {
   subject.pipe(

@@ -1,5 +1,5 @@
 import dotenv from 'dotenv'
-import { initializeMongo } from './models/initializeMongo'
+import { initializeMongo } from './models/initialize-mongo'
 
 async function init (): Promise<void> {
   dotenv.config()

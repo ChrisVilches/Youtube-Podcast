@@ -1,5 +1,5 @@
 import { first, Subject } from 'rxjs'
-import { removeVideoJob } from '../queues/removeVideoJob'
+import { removeVideoJob } from '../queues/videos-queue'
 
 export const cleanVideoId: { value: string } = { value: '' }
 

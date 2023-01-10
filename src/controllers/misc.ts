@@ -1,5 +1,5 @@
 import { Request, Response } from 'express'
-import { getVideosQueue } from '../queues/getVideosQueue'
+import { getVideosQueue } from '../queues/videos-queue'
 
 export const homeController = async (_req: Request, res: Response): Promise<void> => {
   const queue = await getVideosQueue()

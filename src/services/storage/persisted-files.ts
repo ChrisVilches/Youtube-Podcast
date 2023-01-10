@@ -1,8 +1,6 @@
 import { BucketItemStat, UploadedObjectInfo } from 'minio'
 import internal from 'stream'
-import { BUCKET_NAME, getMinioClient } from './minioClient'
-
-// TODO: There's room for improving the name of this module.
+import { BUCKET_NAME, getMinioClient } from './minio-client'
 
 export const videoExists = async (videoId: string): Promise<boolean> => {
   const client = await getMinioClient()

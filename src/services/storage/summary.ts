@@ -1,7 +1,7 @@
 import { BucketItemStat } from 'minio'
-import { videoExists } from '../storage/upload'
-import { getProgress } from '../videoProgress'
-import { BUCKET_NAME, getMinioClient } from './minioClient'
+import { videoExists } from '../storage/persisted-files'
+import { getProgress } from '../video-progress'
+import { BUCKET_NAME, getMinioClient } from './minio-client'
 
 interface VideoStorageSummary {
   progress: number | null

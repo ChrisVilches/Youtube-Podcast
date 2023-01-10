@@ -1,5 +1,5 @@
 import { getModelForClass, prop } from '@typegoose/typegoose'
-import { Base } from './Base'
+import { Base } from './base'
 
 // TODO: I think it's necessary to also execute the "ensureIndexes" method on the model.
 // TODO: Does this index work? Make sure it does, because I only added "unique" and not "index" (unique should be enough)

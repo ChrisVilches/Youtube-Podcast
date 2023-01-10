@@ -1,4 +1,4 @@
-import { getVideosQueue } from '../queues/getVideosQueue'
+import { getVideosQueue } from '../queues/videos-queue'
 
 export const updateProgress = async (videoId: string, progress: number): Promise<void> => {
   const job = await getVideosQueue().getJob(videoId)

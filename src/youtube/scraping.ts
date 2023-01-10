@@ -3,8 +3,8 @@ import { streamToIterable } from 'youtubei.js/dist/src/utils/Utils'
 import VideoInfo, { DownloadOptions } from 'youtubei.js/dist/src/parser/youtube/VideoInfo'
 import Thumbnail from 'youtubei.js/dist/src/parser/classes/misc/Thumbnail'
 import { Subject } from 'rxjs'
-import { persistVideo, videoExists } from '../services/storage/upload'
-import { VideoBasicInfo, VideoBasicInfoModel } from '../models/VideoBasicInfo'
+import { persistVideo, videoExists } from '../services/storage/persisted-files'
+import { VideoBasicInfo, VideoBasicInfoModel } from '../models/video-basic-info'
 
 const DOWNLOAD_OPTIONS: DownloadOptions = {
   type: 'audio',

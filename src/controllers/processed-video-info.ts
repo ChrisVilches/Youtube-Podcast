@@ -1,14 +1,10 @@
 import { NextFunction, Request, Response } from 'express'
-import { requireVideoId } from '../middlewares/requireVideoId'
+import { requireVideoId } from '../middlewares/require-video-id'
 import { videoStorageSummary } from '../services/storage/summary'
 import createError from 'http-errors'
-import { VideoBasicInfo } from '../models/VideoBasicInfo'
+import { VideoBasicInfo } from '../models/video-basic-info'
 import { getModelForClass } from '@typegoose/typegoose'
-import { DownloadStatModel } from '../models/DownloadStat'
-
-// TODO: This API is for videos that have been processed, or done something with.
-//       The "raw" one is for any video, that exists on Youtube (triggers a normal scraping).
-//       The name should reflect that so it's easily understandable.
+import { DownloadStatModel } from '../models/download-stat'
 
 const getVideoInfo = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const videoId: string = (req.query.v as string) ?? ''
@@ -27,4 +23,4 @@ const getVideoInfo = async (req: Request, res: Response, next: NextFunction): Pr
   })
 }
 
-export const videoInfoController = [requireVideoId, getVideoInfo]
+export const processedVideoInfoController = [requireVideoId, getVideoInfo]

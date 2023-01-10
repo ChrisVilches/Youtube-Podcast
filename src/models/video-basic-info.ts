@@ -1,6 +1,6 @@
 import { getModelForClass, modelOptions, prop, Severity } from '@typegoose/typegoose'
 import Thumbnail from 'youtubei.js/dist/src/parser/classes/misc/Thumbnail'
-import { Base } from './Base'
+import { Base } from './base'
 
 const validateDuration = (duration: number): void => {
   if (duration > Number(process.env.MAX_VIDEO_LENGTH_SECONDS)) {

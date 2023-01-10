@@ -1,8 +1,8 @@
 import { Subject } from 'rxjs/internal/Subject'
 import { bootstrap } from './bootstrap'
-import { getVideosQueue } from './queues/getVideosQueue'
+import { getVideosQueue } from './queues/videos-queue'
 import { formatDuration } from './util/format'
-import { consumeSubjectPrintCompletion, consumeSubjectUpdateProgress } from './worker/progressObservers'
+import { consumeSubjectPrintCompletion, consumeSubjectUpdateProgress } from './worker/download-progress-observers'
 import { cleanVideoId, handleShutdown } from './worker/shutdown'
 import { downloadAndPersist, getBasicInfo } from './youtube/scraping'
 

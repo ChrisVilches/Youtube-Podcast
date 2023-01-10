@@ -1,8 +1,8 @@
 import { Request, Response } from 'express'
-import { VideoBasicInfo } from '../models/VideoBasicInfo'
-import { addVideoJob } from '../queues/addVideoJob'
-import { videoExists } from '../services/storage/upload'
-import { getProgress } from '../services/videoProgress'
+import { VideoBasicInfo } from '../models/video-basic-info'
+import { addVideoJob } from '../queues/videos-queue'
+import { videoExists } from '../services/storage/persisted-files'
+import { getProgress } from '../services/video-progress'
 import { getPlayList } from '../youtube/scraping'
 
 export const showPlaylistInfoController = async (req: Request, res: Response): Promise<void> => {
