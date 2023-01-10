@@ -31,6 +31,7 @@ const executeDownload = async (req: Request, res: Response, next: NextFunction):
   if (stat.etag === req.headers['if-none-match']) {
     res.sendStatus(304)
   } else {
+    res.setHeader('Content-Length', stat.size)
     res.setHeader('ETag', stat.etag)
     res.setHeader('Content-Disposition', contentDisposition(await videoToFileName(videoId)))
     res.setHeader('Content-Transfer-Encoding', 'binary')
