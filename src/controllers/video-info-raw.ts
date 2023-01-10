@@ -1,6 +1,6 @@
 import { Request, Response } from 'express'
 import VideoInfo from 'youtubei.js/dist/src/parser/youtube/VideoInfo'
-import { requireVideoId } from '../middlewares/requireVideoId'
+import { requireVideoId } from '../middlewares/require-video-id'
 import { getBasicInfoRaw } from '../youtube/scraping'
 
 const getVideoInfo = async (req: Request, res: Response): Promise<void> => {
