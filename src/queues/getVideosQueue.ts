@@ -1,8 +1,7 @@
 import Bull from 'bull'
-import { dbUrl } from '../util/dbUrl'
 
 const connectQueue = (name: string): Bull.Queue => {
-  const queue: Bull.Queue = new Bull(name, dbUrl('redis', 'REDIS'), {
+  const queue: Bull.Queue = new Bull(name, process.env.REDIS_URL as string, {
     defaultJobOptions: { removeOnComplete: true }
   })
 

@@ -27,6 +27,9 @@ const executeDownload = async (req: Request, res: Response, next: NextFunction):
 
   const stat = await videoStatObject(videoId)
 
+  // TODO: Doesn't work in FireFox
+  //       Print the headers using: console.log(req.headers)
+  //       It doesn't contain the "if-none-match" header (on Firefox).
   if (stat.etag === req.headers['if-none-match']) {
     res.sendStatus(304)
   } else {
