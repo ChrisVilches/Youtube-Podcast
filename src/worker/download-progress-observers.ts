@@ -15,6 +15,11 @@ export const consumeSubjectUpdateProgress = (videoId: string, subject: Subject<n
   })
 })
 
+// TODO: Test this works properly
+const showProgress = (): boolean => {
+  return process.env.WORKER_LOG_PROGRESS === '1'
+}
+
 export const consumeSubjectPrintCompletion = (subject: Subject<number>, scrapedTotalBytes: number): Promise<void> => new Promise(resolve => {
   const mb = bytesToMb(scrapedTotalBytes)
 
@@ -25,9 +30,15 @@ export const consumeSubjectPrintCompletion = (subject: Subject<number>, scrapedT
 
     const p = Math.floor(100 * b / scrapedTotalBytes)
 
-    process.stdout.write(`\r${b}/${scrapedTotalBytes} bytes (${p}% of ${mb}MB)`)
+    if (showProgress()) {
+      process.stdout.write(`\r${b}/${scrapedTotalBytes} bytes (${p}% of ${mb}MB)`)
+    }
+
     if (p === 100) {
-      process.stdout.write('\r')
+      if (showProgress()) {
+        process.stdout.write('\r')
+      }
+
       console.log(`💾 Scraped size ${scrapedTotalBytes}. Final size: ${b} ${scrapedTotalBytes === b ? '✅' : '❌'}`)
     }
   }
