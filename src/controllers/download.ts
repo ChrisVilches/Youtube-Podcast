@@ -6,19 +6,13 @@ import { setProgress } from '../middlewares/set-progress'
 import { forceDownloadAgain } from '../middlewares/force-download-again'
 import { messageResponse } from '../middlewares/message-response'
 import contentDisposition from 'content-disposition'
-import { videoStream, videoOriginalTitle, videoStatObject } from '../services/storage/persisted-files'
-import { cleanTitle } from '../util/format'
+import { videoStream, videoStatObject } from '../services/storage/persisted-files'
 import { updateDownloadStats } from '../middlewares/update-download-stats'
 import { addVideoJob } from '../queues/videos-queue'
-
-const videoToFileName = async (videoId: string, extension: string = 'm4a'): Promise<string> => {
-  const originalTitle = await videoOriginalTitle(videoId)
-  const cleanedTitle = cleanTitle(originalTitle)
-  return `${cleanedTitle}.${extension}`
-}
+import { videoToFileName } from '../services/download-filename'
 
 const executeDownload = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  const videoId: string = (req.query.v as string) ?? ''
+  const videoId: string = res.locals.videoId
 
   if (!(res.locals.videoAlreadyPrepared as boolean)) {
     next(createError.NotFound())
@@ -27,13 +21,17 @@ const executeDownload = async (req: Request, res: Response, next: NextFunction):
 
   const stat = await videoStatObject(videoId)
 
+  // TODO: It may be necessary to check that the request is an actual browser,
+  //       and not a scraper (this may happen when posting the download link on some
+  //       social website, etc).
+
   // TODO: Header 'if-none-match' is not sent when using Firefox.
   if (stat.etag === req.headers['if-none-match']) {
     res.sendStatus(304)
   } else {
     res.setHeader('Content-Length', stat.size)
     res.setHeader('ETag', stat.etag)
-    res.setHeader('Content-Disposition', contentDisposition(await videoToFileName(videoId)))
+    res.setHeader('Content-Disposition', contentDisposition(await videoToFileName(videoId, 'm4a')))
     res.setHeader('Content-Transfer-Encoding', 'binary')
     res.setHeader('Content-Type', 'application/octet-stream')
 
@@ -41,6 +39,7 @@ const executeDownload = async (req: Request, res: Response, next: NextFunction):
     stream.pipe(res)
   }
 
+  // TODO: This occurs even if the download has not completed yet.
   res.on('finish', next)
 }
 

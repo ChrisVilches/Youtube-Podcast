@@ -7,7 +7,7 @@ const validateDuration = (duration: number): void => {
     throw new Error(`Video is too long (${duration} seconds)`)
   }
 
-  if (typeof duration !== 'number' || duration === 0 || isNaN(duration)) {
+  if (typeof duration !== 'number' || duration <= 0 || isNaN(duration)) {
     throw new Error(`Duration is ${duration}, but must be a number greater than zero (video may be invalid)`)
   }
 }

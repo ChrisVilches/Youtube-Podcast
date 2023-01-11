@@ -1,5 +1,5 @@
 export const formatDuration = (seconds: number): string => {
-  if (isNaN(seconds)) {
+  if (isNaN(seconds) || !isFinite(seconds)) {
     return 'N/A'
   }
 
@@ -7,5 +7,16 @@ export const formatDuration = (seconds: number): string => {
 }
 
 const replaceSlash = (s: string): string => s.replace(/\//g, ' ')
+const multipleSpacesToOne = (s: string): string => s.replace(/\s+/g, ' ')
 
-export const cleanTitle = (title: string): string => replaceSlash(title)
+export const cleanTitle = (title: string): string => multipleSpacesToOne(replaceSlash(title)).trim()
+
+export const titleToFilename = (title: string, videoId: string, extension: string): string => {
+  title = cleanTitle(title)
+
+  if (title.length === 0) {
+    return `${videoId}.${extension}`
+  }
+
+  return `${title}.${extension}`
+}

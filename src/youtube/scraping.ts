@@ -1,10 +1,10 @@
-import { Innertube, UniversalCache } from 'youtubei.js'
 import { streamToIterable } from 'youtubei.js/dist/src/utils/Utils'
 import VideoInfo, { DownloadOptions } from 'youtubei.js/dist/src/parser/youtube/VideoInfo'
 import Thumbnail from 'youtubei.js/dist/src/parser/classes/misc/Thumbnail'
 import { Subject } from 'rxjs'
 import { persistVideo, videoExists } from '../services/storage/persisted-files'
 import { VideoBasicInfo, VideoBasicInfoModel } from '../models/video-basic-info'
+import { getInnertube } from './innertube'
 
 const DOWNLOAD_OPTIONS: DownloadOptions = {
   type: 'audio',
@@ -40,13 +40,6 @@ export async function getBasicInfo (videoId: string): Promise<VideoBasicInfo> {
     thumbnails: thumbnails ?? [],
     lengthBytes
   })
-}
-
-let innertube: Innertube | null = null
-
-async function getInnertube (): Promise<Innertube> {
-  innertube ??= await Innertube.create({ cache: new UniversalCache() })
-  return innertube
 }
 
 async function download (videoId: string, subject: Subject<number>): Promise<Buffer> {

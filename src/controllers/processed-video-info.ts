@@ -6,8 +6,8 @@ import { VideoBasicInfo } from '../models/video-basic-info'
 import { getModelForClass } from '@typegoose/typegoose'
 import { DownloadStatModel } from '../models/download-stat'
 
-const getVideoInfo = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
-  const videoId: string = (req.query.v as string) ?? ''
+const getVideoInfo = async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
+  const videoId: string = res.locals.videoId
 
   const metadata: VideoBasicInfo | null = await getModelForClass(VideoBasicInfo).findOne({ videoId })
 
