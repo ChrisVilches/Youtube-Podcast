@@ -10,6 +10,7 @@ import createError from 'http-errors'
 import { videoInfoRawController } from './controllers/video-info-raw'
 import { bootstrap } from './bootstrap'
 import { processedVideoInfoController } from './controllers/processed-video-info'
+import { captionsController } from './controllers/captions'
 
 bootstrap(() => {
   const app: Express = express()
@@ -21,6 +22,7 @@ bootstrap(() => {
   app.get('/', homeController)
   app.get('/info', processedVideoInfoController)
   app.get('/info_raw', videoInfoRawController)
+  app.get('/captions', captionsController)
   app.get('/download', downloadController)
   app.post('/prepare', prepareController)
   app.get('/playlist/:id', showPlaylistInfoController)

@@ -3,7 +3,7 @@ import VideoInfo, { DownloadOptions } from 'youtubei.js/dist/src/parser/youtube/
 import Thumbnail from 'youtubei.js/dist/src/parser/classes/misc/Thumbnail'
 import { Subject } from 'rxjs'
 import { persistVideo, videoExists } from '../services/storage/persisted-files'
-import { VideoBasicInfo, VideoBasicInfoModel } from '../models/video-basic-info'
+import { CaptionMetadata, VideoBasicInfo, VideoBasicInfoModel } from '../models/video-basic-info'
 import { getInnertube } from './innertube'
 
 const DOWNLOAD_OPTIONS: DownloadOptions = {
@@ -24,6 +24,14 @@ export async function getBasicInfoRaw (videoId: string): Promise<VideoInfo> {
   return await yt.getBasicInfo(videoId)
 }
 
+// TODO: Maybe cacheing this right away would be nice. That would remove all of the code smells
+//       because the updateOne({ videoId }, { ... }, { upsert: true }) automatically creates the
+//       already-saved (i.e. cached) document. No need to do anything else.
+//
+//       Also, since MongoDB is fast, we can just save this no problem right away.
+//       The only problem is that this method would become too effectful, although that's not a problem
+//       if we somehow make it clear (by changing the name or something like that).
+//       So TODO: change the name
 export async function getBasicInfo (videoId: string): Promise<VideoBasicInfo> {
   const yt = await getInnertube()
   const data: VideoInfo = await yt.getBasicInfo(videoId)
@@ -31,15 +39,22 @@ export async function getBasicInfo (videoId: string): Promise<VideoBasicInfo> {
   const { title, duration, short_description: description, thumbnail: thumbnails } = data.basic_info
 
   const lengthBytes: number | undefined = data.streaming_data?.adaptive_formats.filter((x: any) => x.mime_type.startsWith('audio/mp4'))[0]?.content_length
+  const captions: CaptionMetadata[] = data.captions?.caption_tracks.map(data => ({ name: data.name.text, url: data.base_url, lang: data.language_code })) ?? []
 
-  return new VideoBasicInfoModel({
-    videoId,
+  const info = await VideoBasicInfoModel.findOneAndUpdate({ videoId }, {
     duration: duration ?? 0,
     title: title ?? '',
     description: description ?? '',
     thumbnails: thumbnails ?? [],
-    lengthBytes
-  })
+    lengthBytes,
+    captions
+  }, { new: true, upsert: true })
+
+  if (info === null) {
+    throw new Error(`Upsert was not possible (${VideoBasicInfoModel.name})`)
+  }
+
+  return info
 }
 
 async function download (videoId: string, subject: Subject<number>): Promise<Buffer> {
@@ -65,11 +80,8 @@ async function download (videoId: string, subject: Subject<number>): Promise<Buf
 }
 
 export async function downloadAndPersist (info: VideoBasicInfo, subject: Subject<number>): Promise<void> {
-  const { videoId, title, duration, description, lengthBytes, thumbnails } = info
+  const { videoId, title } = info
 
-  const payload = { videoId, title, duration, description, lengthBytes, thumbnails }
-
-  await VideoBasicInfoModel.updateOne({ videoId }, payload, { upsert: true })
   info.validateCanDownload()
 
   const binary: Buffer = await download(videoId, subject)
