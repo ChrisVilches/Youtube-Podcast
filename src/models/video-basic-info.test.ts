@@ -1,17 +1,26 @@
-// TODO: Implement this test.
-
 import { VideoBasicInfo, VideoBasicInfoModel } from './video-basic-info'
 
 const mock = (args: any = {}): VideoBasicInfo => new VideoBasicInfoModel(Object.assign({
   videoId: 'AAAAAA',
   title: 'some title',
   duration: 1000,
-  description: 'description',
+  description: 'some description',
   lengthBytes: 1000,
-  thumbnails: []
+  thumbnails: [],
+  transcriptions: []
 }, args))
 
-describe(VideoBasicInfoModel.name, () => {
+describe(VideoBasicInfoModel.modelName, () => {
+  describe('validations', () => {
+    it('validates a correct object', async () => {
+      await expect(VideoBasicInfoModel.validate(mock())).resolves.not.toThrowError()
+    })
+
+    it('requires content length (bytes)', async () => {
+      await expect(VideoBasicInfoModel.validate(mock({ lengthBytes: undefined }))).rejects.toThrowError()
+    })
+  })
+
   describe(VideoBasicInfoModel.prototype.validateCanDownload.name, () => {
     it('validates a correct object', () => {
       expect(() => mock().validateCanDownload()).not.toThrowError()

@@ -15,7 +15,6 @@ export const consumeSubjectUpdateProgress = (videoId: string, subject: Subject<n
   })
 })
 
-// TODO: Test this works properly
 const showProgress = (): boolean => {
   return process.env.WORKER_LOG_PROGRESS === '1'
 }

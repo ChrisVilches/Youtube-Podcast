@@ -18,17 +18,12 @@ const validateLengthBytes = (lengthBytes?: number): void => {
   }
 }
 
-export interface CaptionMetadata {
+export interface TranscriptionMetadata {
   url: string
   name: string
   lang: string
 }
 
-// TODO: I think it's necessary to also execute the "ensureIndexes" method on the model.
-// TODO: Does this index work? Make sure it does, because I only added "unique" and not "index" (unique should be enough)
-// NOTE: Some fields are not required for building an instance, but are required when saving the object.
-//       This prevents incomplete instances to be saved, allowing only detailed data to be persisted (obtained with certain APIs).
-//       TODO: This should be explained using unit tests, not with comments.
 @modelOptions({
   options: {
     allowMixed: Severity.ALLOW
@@ -54,7 +49,7 @@ export class VideoBasicInfo extends Base {
   public thumbnails!: Thumbnail[]
 
   @prop({ required: true })
-  public captions?: CaptionMetadata[]
+  public transcriptions?: TranscriptionMetadata[]
 
   validateCanDownload (): void {
     validateDuration(this.duration)

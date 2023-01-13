@@ -3,7 +3,7 @@ import { setVideoAlreadyPrepared } from '../middlewares/set-video-already-prepar
 import { requireVideoId } from '../middlewares/require-video-id'
 import createError from 'http-errors'
 import { setProgress } from '../middlewares/set-progress'
-import { forceDownloadAgain } from '../middlewares/force-download-again'
+import { clearExistingFile } from '../middlewares/clear-existing-file'
 import { messageResponse } from '../middlewares/message-response'
 import contentDisposition from 'content-disposition'
 import { videoStream, videoStatObject } from '../services/storage/persisted-files'
@@ -20,10 +20,6 @@ const executeDownload = async (req: Request, res: Response, next: NextFunction):
   }
 
   const stat = await videoStatObject(videoId)
-
-  // TODO: It may be necessary to check that the request is an actual browser,
-  //       and not a scraper (this may happen when posting the download link on some
-  //       social website, etc).
 
   // TODO: Header 'if-none-match' is not sent when using Firefox.
   if (stat.etag === req.headers['if-none-match']) {
@@ -67,4 +63,4 @@ const executePrepare = async (_req: Request, res: Response): Promise<void> => {
 }
 
 export const downloadController = [requireVideoId, setProgress, setVideoAlreadyPrepared, executeDownload, updateDownloadStats]
-export const prepareController = [requireVideoId, setProgress, forceDownloadAgain, setVideoAlreadyPrepared, executePrepare]
+export const prepareController = [requireVideoId, setProgress, clearExistingFile, setVideoAlreadyPrepared, executePrepare]

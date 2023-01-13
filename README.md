@@ -34,8 +34,10 @@ npm run dev:worker
 * MongoDB
 * Redis
 * MinIO
-* Other libraries (Bull, Youtube.js, RxJS, Mongoose, etc)
+* Jest
+* Other libraries (Bull, Youtube.js, RxJS, Mongoose, Typegoose, etc)
 
 ## Limitations
 
 * Videos may be unavailable for download depending on the server location (region).
+* Cached data (such as transcriptions, video metadata, etc) may never be re-fetched (e.g. doesn't re-fetch even if new transcriptions are added to the video).

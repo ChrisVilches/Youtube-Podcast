@@ -4,7 +4,7 @@ import { getVideosQueue } from './queues/videos-queue'
 import { formatDuration } from './util/format'
 import { consumeSubjectPrintCompletion, consumeSubjectUpdateProgress } from './worker/download-progress-observers'
 import { cleanVideoId, handleShutdown } from './worker/shutdown'
-import { downloadAndPersist, getBasicInfo } from './youtube/scraping'
+import { downloadAndPersist, fetchAndSaveBasicInfo } from './youtube/scraping'
 
 // TODO: There's a bug where the program keeps outputting even after CTRL+C and even after
 //       the shell prompt ($) is displayed.
@@ -14,7 +14,7 @@ const processVideoId = async (videoId: string): Promise<void> => {
   let scrapedTotalBytes = 0
 
   try {
-    const info = await getBasicInfo(videoId)
+    const info = await fetchAndSaveBasicInfo(videoId)
 
     const { title: videoTitle, duration, lengthBytes } = info
     scrapedTotalBytes = lengthBytes ?? Infinity

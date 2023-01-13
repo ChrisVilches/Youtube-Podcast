@@ -3,7 +3,7 @@ import VideoInfo, { DownloadOptions } from 'youtubei.js/dist/src/parser/youtube/
 import Thumbnail from 'youtubei.js/dist/src/parser/classes/misc/Thumbnail'
 import { Subject } from 'rxjs'
 import { persistVideo, videoExists } from '../services/storage/persisted-files'
-import { CaptionMetadata, VideoBasicInfo, VideoBasicInfoModel } from '../models/video-basic-info'
+import { TranscriptionMetadata, VideoBasicInfo, VideoBasicInfoModel } from '../models/video-basic-info'
 import { getInnertube } from './innertube'
 
 const DOWNLOAD_OPTIONS: DownloadOptions = {
@@ -24,22 +24,23 @@ export async function getBasicInfoRaw (videoId: string): Promise<VideoInfo> {
   return await yt.getBasicInfo(videoId)
 }
 
-// TODO: Maybe cacheing this right away would be nice. That would remove all of the code smells
-//       because the updateOne({ videoId }, { ... }, { upsert: true }) automatically creates the
-//       already-saved (i.e. cached) document. No need to do anything else.
-//
-//       Also, since MongoDB is fast, we can just save this no problem right away.
-//       The only problem is that this method would become too effectful, although that's not a problem
-//       if we somehow make it clear (by changing the name or something like that).
-//       So TODO: change the name
-export async function getBasicInfo (videoId: string): Promise<VideoBasicInfo> {
+const extractLengthBytes = (data: any): number | undefined => {
+  const value = data.streaming_data?.adaptive_formats.filter((x: any) => x.mime_type.startsWith('audio/mp4'))[0]?.content_length
+  if (!isFinite(value)) {
+    return 0
+  }
+
+  return value
+}
+
+export async function fetchAndSaveBasicInfo (videoId: string): Promise<VideoBasicInfo> {
   const yt = await getInnertube()
   const data: VideoInfo = await yt.getBasicInfo(videoId)
 
   const { title, duration, short_description: description, thumbnail: thumbnails } = data.basic_info
 
-  const lengthBytes: number | undefined = data.streaming_data?.adaptive_formats.filter((x: any) => x.mime_type.startsWith('audio/mp4'))[0]?.content_length
-  const captions: CaptionMetadata[] = data.captions?.caption_tracks.map(data => ({ name: data.name.text, url: data.base_url, lang: data.language_code })) ?? []
+  const lengthBytes: number | undefined = extractLengthBytes(data)
+  const transcriptions: TranscriptionMetadata[] = data.captions?.caption_tracks.map(data => ({ name: data.name.text, url: data.base_url, lang: data.language_code })) ?? []
 
   const info = await VideoBasicInfoModel.findOneAndUpdate({ videoId }, {
     duration: duration ?? 0,
@@ -47,7 +48,7 @@ export async function getBasicInfo (videoId: string): Promise<VideoBasicInfo> {
     description: description ?? '',
     thumbnails: thumbnails ?? [],
     lengthBytes,
-    captions
+    transcriptions
   }, { new: true, upsert: true })
 
   if (info === null) {
