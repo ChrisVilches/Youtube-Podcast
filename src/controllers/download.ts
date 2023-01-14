@@ -32,17 +32,10 @@ const executeDownload = async (req: Request, res: Response, next: NextFunction):
     res.setHeader('Content-Type', 'application/octet-stream')
 
     const stream = await videoStream(videoId)
-    stream.pipe(res)
 
-    // TODO: Now using this to see if the "next" is executed when the download is complete.
-    //       Test has to be made with Digital Ocean only. (download a video, check that /info doesn't
-    //       show any download. But when the download completes (i.e. file is in the device), /info should
-    //       show a downloadCount = 1)
-    stream.on('end', next)
+    // If deployed behind Nginx, this will execute immediately.
+    stream.pipe(res).on('finish', next)
   }
-
-  // TODO: This occurs even if the download has not completed yet.
-  // res.on('finish', next)
 }
 
 const executePrepare = async (_req: Request, res: Response): Promise<void> => {
