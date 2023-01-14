@@ -33,7 +33,7 @@ const executeDownload = async (req: Request, res: Response, next: NextFunction):
 
     const stream = await videoStream(videoId)
 
-    // If deployed behind Nginx, this will execute immediately.
+    // If deployed behind Nginx, this ('finish' event) will execute immediately.
     stream.pipe(res).on('finish', next)
   }
 }
