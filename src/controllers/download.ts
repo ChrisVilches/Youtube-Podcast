@@ -11,6 +11,14 @@ import { updateDownloadStats } from '../middlewares/update-download-stats'
 import { addVideoJob } from '../queues/videos-queue'
 import { videoToFileName } from '../services/download-filename'
 
+// TODO: This controller has a few problems.
+//       * Download count is increased at times that depend on how it's deployed (with or without Nginx)
+//       * Too many custom headers (not necessarily a problem, but may fail)
+//       * Not using the res.download function. Also not necessarily a problem though.
+//       * Haven't implemented the frontend app, so this may change anyway.
+//
+//       I think the best way to go about this is to just wait until the frontend app is implemented,
+//       and start modifying this from there.
 const executeDownload = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const videoId: string = res.locals.videoId
 
@@ -32,8 +40,6 @@ const executeDownload = async (req: Request, res: Response, next: NextFunction):
     res.setHeader('Content-Type', 'application/octet-stream')
 
     const stream = await videoStream(videoId)
-
-    // If deployed behind Nginx, this ('finish' event) will execute immediately.
     stream.pipe(res).on('finish', next)
   }
 }
