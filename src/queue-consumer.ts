@@ -45,6 +45,7 @@ const queueConsumer = async (): Promise<void> => {
 }
 
 bootstrap(() => {
+  console.log('🔧 Worker started')
   queueConsumer().catch(console.log)
   handleShutdown()
 })

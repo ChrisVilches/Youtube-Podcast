@@ -11,7 +11,7 @@ const cleanup = async (videoId: string): Promise<void> => {
 
   try {
     await tasks
-    console.log('Cleanup OK')
+    console.log('🧹 Cleanup OK')
   } catch (e) {
     console.log(e)
   }
@@ -22,7 +22,7 @@ const cleanup = async (videoId: string): Promise<void> => {
 
 export const gracefulShutdown = async (): Promise<void> => {
   console.log()
-  console.log('Graceful shutdown...')
+  console.log('🛑 Graceful shutdown...')
   await cleanup(cleanVideoId.value)
   process.exit()
 }

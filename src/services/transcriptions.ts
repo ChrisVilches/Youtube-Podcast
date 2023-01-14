@@ -49,6 +49,14 @@ export const fetchTranscriptions = async (metadata: VideoBasicInfo, desiredLang?
     return result
   } catch (e) {
     console.error(e)
+    // TODO: Test the output of this (how does it look when using the API Client, Thunder in my case).
+    //       I think it should be an 500 error without message. But what was my intention?
+    //       I think I should move the console.error to the global error handler and log all status >= 500 errors
+    //       (other errors are not necessary to log because they might be user errors like bad requests or forbidden, etc)
+    //       Then, I can just remove all this try/catch.
+    //       The problem about retrying (and using a lot of OpenAI credits) still remains though. This is because failed
+    //       queries are not cached, but they may still use some credits if the summarization executes, but because it doesn't
+    //       get cached, the user can trigger the query again, consuming even more credits.
     throw new Error('Something happened')
   }
 }
