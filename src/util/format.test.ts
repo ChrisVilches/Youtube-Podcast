@@ -32,4 +32,9 @@ describe(titleToFilename.name, () => {
   it('handles empty title (after cleaning) correctly', () => {
     expect(titleToFilename('  / / ///  /    //', 'DB5W6qg_1Dx', 'm4a')).toBe('DB5W6qg_1Dx.m4a')
   })
+
+  it('removes single quotes', () => {
+    expect(titleToFilename("this is a 'file'", 'DB5W6qg_1Dx', 'm4a')).toBe('this is a file.m4a')
+    expect(titleToFilename(" '' '''  ''", 'DB5W6qg_1Dx', 'm4a')).toBe('DB5W6qg_1Dx.m4a')
+  })
 })

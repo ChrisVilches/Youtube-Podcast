@@ -9,7 +9,7 @@ import { errorHandler } from './middlewares/error-handler'
 import createError from 'http-errors'
 import { videoInfoRawController } from './controllers/video-info-raw'
 import { bootstrap } from './bootstrap'
-import { processedVideoInfoController } from './controllers/processed-video-info'
+import { processedVideoInfoController } from './controllers/video-info'
 import { transcriptionsController } from './controllers/transcriptions'
 
 bootstrap(() => {

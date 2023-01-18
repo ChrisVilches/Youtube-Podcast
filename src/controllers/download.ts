@@ -5,11 +5,16 @@ import createError from 'http-errors'
 import { setProgress } from '../middlewares/set-progress'
 import { clearExistingFile } from '../middlewares/clear-existing-file'
 import { messageResponse } from '../middlewares/message-response'
-import contentDisposition from 'content-disposition'
 import { videoStream, videoStatObject } from '../services/storage/persisted-files'
 import { updateDownloadStats } from '../middlewares/update-download-stats'
 import { addVideoJob } from '../queues/videos-queue'
 import { videoToFileName } from '../services/download-filename'
+
+const contentDisposition = async (videoId: string): Promise<string> => {
+  const filename = await videoToFileName(videoId, 'm4a')
+  const encodedFilename = encodeURIComponent(filename)
+  return `attachment; filename*=UTF-8''${encodedFilename}`
+}
 
 // TODO: This controller has a few problems.
 //       * Download count is increased at times that depend on how it's deployed (with or without Nginx)
@@ -35,7 +40,7 @@ const executeDownload = async (req: Request, res: Response, next: NextFunction):
   } else {
     res.setHeader('Content-Length', stat.size)
     res.setHeader('ETag', stat.etag)
-    res.setHeader('Content-Disposition', contentDisposition(await videoToFileName(videoId, 'm4a')))
+    res.setHeader('Content-Disposition', await contentDisposition(videoId))
     res.setHeader('Content-Transfer-Encoding', 'binary')
     res.setHeader('Content-Type', 'application/octet-stream')
 
