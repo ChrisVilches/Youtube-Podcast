@@ -25,7 +25,7 @@ describe(TranscriptionResultModel.modelName, () => {
   })
 
   it('rejects long lang', async () => {
-    await expect(TranscriptionResultModel.validate(mock({ lang: 'aaabbccccddd' }))).rejects.toThrowError()
+    await expect(TranscriptionResultModel.validate(mock({ lang: 'aaabbccccdddeeeeffffggghhhh' }))).rejects.toThrowError()
   })
 
   it('validates transforms lang', async () => {

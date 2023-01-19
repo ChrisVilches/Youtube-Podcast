@@ -21,10 +21,7 @@ const getTranscriptions = async (req: Request, res: Response, next: NextFunction
     const result: TranscriptionResult = await fetchTranscriptions(metadata, desiredLang)
     // TODO: Should be json (+ text cleaning)
     // TODO: Consider implementing the "cleaning" process in the TranscriptionResultModel itself.
-    const cleanResult: string = result.transcription.replace(/&amp;#39;/g, "'")
-    res.json({
-      result: cleanResult
-    })
+    res.json(result)
     // res.json(transcription)
   } catch (e) {
     next(createError.BadRequest((e as Error).message))

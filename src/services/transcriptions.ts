@@ -1,6 +1,11 @@
 import { TranscriptionResult, TranscriptionResultModel } from '../models/transcription-result'
 import { TranscriptionMetadata, VideoBasicInfo } from '../models/video-basic-info'
-import { summarizeText } from './text-summary'
+import { xmlTranscriptionToJson } from '../util/xml'
+
+// TODO: I think the best way to do this is to convert the XML to JSON (keep the timestamps)
+//       and save it like that. Maybe with some simple cleaning. Then let the frontend clean it.
+//       But for summaries, I'd also probably have to clean it myself too. So maybe just store both
+//       in the same document.
 
 const getDesiredTranscription = (metadata: VideoBasicInfo, lang?: string): TranscriptionMetadata => {
   const transcriptions = metadata.transcriptions ?? []
@@ -39,16 +44,18 @@ export const fetchTranscriptions = async (metadata: VideoBasicInfo, desiredLang?
   //       transcription, and trigger it again, it fetches (and gets cached) correctly. I think it shouldn't be cached
   //       if the API fails. And then on the frontend simply show a message that something went wrong.
   try {
-    const transcriptionRes = await fetch(transcription.url)
+    const res = await fetch(transcription.url)
+    const xml = await res.text()
+    const json = xmlTranscriptionToJson(xml)
 
-    const transcriptionContent = await transcriptionRes.text()
-    const summary: string | undefined = await summarizeText(transcriptionContent, transcription.lang)
+    // TODO: Summary functionality.
+    const summary: string | undefined = undefined // await summarizeText(transcriptionContent, transcription.lang)
 
     const result = await TranscriptionResultModel.create({
       videoId: metadata.videoId,
       lang: transcription.lang,
       summary,
-      transcription: transcriptionContent
+      transcription: json
     })
 
     return result
