@@ -33,6 +33,11 @@ export const fetchTranscriptions = async (metadata: VideoBasicInfo, desiredLang?
   //       It can probably be recycled.
   //       But actually the most important thing is that if it fails, the user can retry and it would
   //       use OpenAI multiple times.
+  // TODO: I already saw an error related to this. Basically Google fails and it returns a "timed out" or 404 error,
+  //       and it seems that the page is saved as is (as HTML), therefore when I load the /transcriptions?v=xxxxxx
+  //       I see that exact same page (with the broken computer and some text). Then if I manually remove the cached
+  //       transcription, and trigger it again, it fetches (and gets cached) correctly. I think it shouldn't be cached
+  //       if the API fails. And then on the frontend simply show a message that something went wrong.
   try {
     const transcriptionRes = await fetch(transcription.url)
 

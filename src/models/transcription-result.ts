@@ -6,7 +6,7 @@ export class TranscriptionResult extends Base {
   @prop({ required: true })
   public videoId!: string
 
-  @prop({ required: true, minLength: 1, maxLength: 5, lowercase: true, trim: true })
+  @prop({ required: true, minLength: 1, maxLength: 20, lowercase: true, trim: true })
   public lang!: string
 
   @prop({ required: true })

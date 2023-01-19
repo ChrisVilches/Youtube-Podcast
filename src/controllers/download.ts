@@ -4,11 +4,11 @@ import { requireVideoId } from '../middlewares/require-video-id'
 import createError from 'http-errors'
 import { setProgress } from '../middlewares/set-progress'
 import { clearExistingFile } from '../middlewares/clear-existing-file'
-import { messageResponse } from '../middlewares/message-response'
 import { videoStream, videoStatObject } from '../services/storage/persisted-files'
 import { updateDownloadStats } from '../middlewares/update-download-stats'
 import { addVideoJob } from '../queues/videos-queue'
 import { videoToFileName } from '../services/download-filename'
+import { createDownloadResponse } from '../middlewares/download-response'
 
 const contentDisposition = async (videoId: string): Promise<string> => {
   const filename = await videoToFileName(videoId, 'm4a')
@@ -55,7 +55,7 @@ const executePrepare = async (_req: Request, res: Response): Promise<void> => {
   const videoAlreadyPrepared: boolean = res.locals.videoAlreadyPrepared
 
   if (videoAlreadyPrepared) {
-    res.json(messageResponse(`File is already prepared. Use /download?v=${videoId} to download`))
+    res.json(createDownloadResponse(true, 100))
     return
   }
 
@@ -63,7 +63,7 @@ const executePrepare = async (_req: Request, res: Response): Promise<void> => {
 
   const progress = (res.locals.progress as number | null) ?? 0
 
-  res.json(messageResponse(`Downloading (${progress}%). Try using /download?v=${videoId} after a few moments in order to download`))
+  res.json(createDownloadResponse(false, progress))
 }
 
 export const downloadController = [requireVideoId, setProgress, setVideoAlreadyPrepared, executeDownload, updateDownloadStats]
