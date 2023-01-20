@@ -1,6 +1,6 @@
 import { ValidationError, X2jOptionsOptional, XMLParser, XMLValidator } from 'fast-xml-parser'
 import { decode } from 'he'
-import { TranscriptionEntry } from '../models/transcription-result'
+import { TranscriptionEntry } from '../models/transcription-entry'
 
 const XML_OPTIONS: X2jOptionsOptional = {
   preserveOrder: true,
@@ -34,15 +34,11 @@ export const xmlTranscriptionToJson = (xml: string): TranscriptionEntry[] => {
         continue
       }
 
-      const text: string = decode(o.text[0]['#text'])
-      const start: number = Number(o[':@']['@_start'])
-      const duration: number = Number(o[':@']['@_start'])
-
-      clean.push({
-        text,
-        start,
-        duration
-      })
+      const entry = new TranscriptionEntry()
+      entry.text = decode(o.text[0]['#text'])
+      entry.start = Number(o[':@']['@_start'])
+      entry.duration = Number(o[':@']['@_start'])
+      clean.push(entry)
     }
   } catch {
     throw new Error('XML string cannot be converted to transcription entries')

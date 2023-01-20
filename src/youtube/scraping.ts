@@ -3,8 +3,9 @@ import VideoInfo, { DownloadOptions } from 'youtubei.js/dist/src/parser/youtube/
 import Thumbnail from 'youtubei.js/dist/src/parser/classes/misc/Thumbnail'
 import { Subject } from 'rxjs'
 import { persistVideo, videoExists } from '../services/storage/persisted-files'
-import { TranscriptionMetadata, VideoBasicInfo, VideoBasicInfoModel } from '../models/video-basic-info'
+import { VideoBasicInfo, VideoBasicInfoModel } from '../models/video-basic-info'
 import { getInnertube } from './innertube'
+import { TranscriptionMetadata } from '../models/transcription-metadata'
 
 const DOWNLOAD_OPTIONS: DownloadOptions = {
   type: 'audio',

@@ -1,14 +1,7 @@
-import { VideoBasicInfo, VideoBasicInfoModel } from './video-basic-info'
+import { mockVideoBasicInfo } from './mock'
+import { VideoBasicInfoModel } from './video-basic-info'
 
-const mock = (args: any = {}): VideoBasicInfo => new VideoBasicInfoModel(Object.assign({
-  videoId: 'AAAAAA',
-  title: 'some title',
-  duration: 1000,
-  description: 'some description',
-  lengthBytes: 1000,
-  thumbnails: [],
-  transcriptions: []
-}, args))
+const mock = mockVideoBasicInfo
 
 describe(VideoBasicInfoModel.modelName, () => {
   describe('validations', () => {
@@ -18,6 +11,24 @@ describe(VideoBasicInfoModel.modelName, () => {
 
     it('requires content length (bytes)', async () => {
       await expect(VideoBasicInfoModel.validate(mock({ lengthBytes: undefined }))).rejects.toThrowError()
+    })
+  })
+
+  describe('thumbnails validations', () => {
+    it('validates a correct object', async () => {
+      const thumbnails = [{ height: 1, width: 4, url: 'http://www.someurl.com' }]
+      await expect(VideoBasicInfoModel.validate(mock({ thumbnails }))).resolves.not.toThrowError()
+    })
+
+    it('requires positive width', async () => {
+      const thumbnails = [{ height: 1, width: 0, url: 'http://www.someurl.com' }]
+      await expect(VideoBasicInfoModel.validate(mock({ thumbnails }))).rejects.toThrowError('Validation failed: thumbnails.width: Path `width` (0) is less than minimum allowed value (1).')
+    })
+
+    it('requires URL', async () => {
+      const thumbnails = [{ height: 1, width: 6, url: '        url.jpg       ' }]
+
+      await expect(VideoBasicInfoModel.validate(mock({ thumbnails }))).rejects.toThrowError('Validation failed: thumbnails.url: Path `url` (`url.jpg`) is shorter than the minimum allowed length (10).')
     })
   })
 

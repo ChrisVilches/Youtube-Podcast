@@ -1,6 +1,7 @@
-import { getModelForClass, modelOptions, prop, Severity } from '@typegoose/typegoose'
-import Thumbnail from 'youtubei.js/dist/src/parser/classes/misc/Thumbnail'
+import { getModelForClass, mongoose, prop } from '@typegoose/typegoose'
 import { Base } from './base'
+import { Thumbnail } from './thumbnail'
+import { TranscriptionMetadata } from './transcription-metadata'
 
 const validateDuration = (duration: number): void => {
   if (duration > Number(process.env.MAX_VIDEO_LENGTH_SECONDS)) {
@@ -18,17 +19,6 @@ const validateLengthBytes = (lengthBytes?: number): void => {
   }
 }
 
-export interface TranscriptionMetadata {
-  url: string
-  name: string
-  lang: string
-}
-
-@modelOptions({
-  options: {
-    allowMixed: Severity.ALLOW
-  }
-})
 export class VideoBasicInfo extends Base {
   @prop({ required: true, unique: true })
   public videoId!: string
@@ -45,11 +35,11 @@ export class VideoBasicInfo extends Base {
   @prop({ required: true })
   public lengthBytes?: number
 
-  @prop({ required: true })
-  public thumbnails!: Thumbnail[]
+  @prop({ required: true, type: () => [Thumbnail] })
+  public thumbnails!: mongoose.Types.Array<Thumbnail>
 
-  @prop({ required: true })
-  public transcriptions?: TranscriptionMetadata[]
+  @prop({ required: true, type: () => [TranscriptionMetadata] })
+  public transcriptions!: mongoose.Types.Array<TranscriptionMetadata>
 
   validateCanDownload (): void {
     validateDuration(this.duration)

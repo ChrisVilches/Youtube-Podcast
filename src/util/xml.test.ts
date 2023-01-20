@@ -1,4 +1,4 @@
-import { TranscriptionEntry } from '../models/transcription-result'
+import { TranscriptionEntry } from '../models/transcription-entry'
 import { validateXml, xmlTranscriptionToJson } from './xml'
 
 const invalidXml = `

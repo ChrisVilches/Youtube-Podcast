@@ -1,11 +1,7 @@
-import { TranscriptionResult, TranscriptionResultModel } from './transcription-result'
+import { mockTranscriptionResult } from './mock'
+import { TranscriptionResultModel } from './transcription-result'
 
-const mock = (args: any = {}): TranscriptionResult => new TranscriptionResultModel(Object.assign({
-  videoId: 'AAAAAA',
-  lang: 'es',
-  transcription: 'this is the content',
-  summary: undefined
-}, args))
+const mock = mockTranscriptionResult
 
 describe(TranscriptionResultModel.modelName, () => {
   it('validates a correct object', async () => {
@@ -28,7 +24,7 @@ describe(TranscriptionResultModel.modelName, () => {
     await expect(TranscriptionResultModel.validate(mock({ lang: 'aaabbccccdddeeeeffffggghhhh' }))).rejects.toThrowError()
   })
 
-  it('validates transforms lang', async () => {
+  it('transforms lang when validating', async () => {
     const t = mock({ lang: '       EN      ' })
     await TranscriptionResultModel.validate(t)
     expect(t.lang).toBe('en')

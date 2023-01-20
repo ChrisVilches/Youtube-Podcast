@@ -1,5 +1,7 @@
+import { TranscriptionEntry } from '../models/transcription-entry'
+import { TranscriptionMetadata } from '../models/transcription-metadata'
 import { TranscriptionResult, TranscriptionResultModel } from '../models/transcription-result'
-import { TranscriptionMetadata, VideoBasicInfo } from '../models/video-basic-info'
+import { VideoBasicInfo } from '../models/video-basic-info'
 import { xmlTranscriptionToJson } from '../util/xml'
 
 // TODO: I think the best way to do this is to convert the XML to JSON (keep the timestamps)
@@ -45,8 +47,8 @@ export const fetchTranscriptions = async (metadata: VideoBasicInfo, desiredLang?
   //       if the API fails. And then on the frontend simply show a message that something went wrong.
   try {
     const res = await fetch(transcription.url)
-    const xml = await res.text()
-    const json = xmlTranscriptionToJson(xml)
+    const xml: string = await res.text()
+    const json: TranscriptionEntry[] = xmlTranscriptionToJson(xml)
 
     // TODO: Summary functionality.
     const summary: string | undefined = undefined // await summarizeText(transcriptionContent, transcription.lang)

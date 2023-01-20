@@ -1,10 +1,17 @@
-import { getModelForClass, index, prop } from '@typegoose/typegoose'
+import { getModelForClass, index, mongoose, prop } from '@typegoose/typegoose'
 import { Base } from './base'
+import { TranscriptionEntry } from './transcription-entry'
 
-export interface TranscriptionEntry {
-  text: string
-  start: number
-  duration: number
+const transcriptionValidatorSorted = (value: TranscriptionEntry[]): boolean => {
+  for (let i = 0; i < value.length - 1; i++) {
+    const curr = value[i]
+    const next = value[i + 1]
+    if (curr.start >= next.start) {
+      return false
+    }
+  }
+
+  return true
 }
 
 @index({ videoId: 1, lang: 1 }, { unique: true })
@@ -15,10 +22,15 @@ export class TranscriptionResult extends Base {
   @prop({ required: true, minLength: 1, maxLength: 20, lowercase: true, trim: true })
   public lang!: string
 
-  // TODO: This should have its validation, since it's always the same structure
-  //       The structure is a list of TranscriptionEntry, which right now is on a different file.
-  @prop({ required: true })
-  public transcription!: TranscriptionEntry
+  @prop({
+    required: true,
+    validate: {
+      validator: transcriptionValidatorSorted,
+      message: 'start times must be sorted'
+    },
+    type: () => [TranscriptionEntry]
+  })
+  public transcription!: mongoose.Types.Array<TranscriptionEntry>
 
   @prop({ required: false })
   public summary?: string
