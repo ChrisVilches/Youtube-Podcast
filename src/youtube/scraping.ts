@@ -43,7 +43,7 @@ export async function fetchAndSaveBasicInfo (videoId: string): Promise<VideoBasi
   const lengthBytes: number | undefined = extractLengthBytes(data)
   const transcriptions: TranscriptionMetadata[] = data.captions?.caption_tracks.map(data => ({ name: data.name.text, url: data.base_url, lang: data.language_code })) ?? []
 
-  const info = await VideoBasicInfoModel.findOneAndUpdate({ videoId }, {
+  return await VideoBasicInfoModel.findOneAndUpdate({ videoId }, {
     duration: duration ?? 0,
     title: title ?? '',
     description: description ?? '',
@@ -51,12 +51,6 @@ export async function fetchAndSaveBasicInfo (videoId: string): Promise<VideoBasi
     lengthBytes,
     transcriptions
   }, { new: true, upsert: true })
-
-  if (info === null) {
-    throw new Error(`Upsert was not possible (${VideoBasicInfoModel.name})`)
-  }
-
-  return info
 }
 
 async function download (videoId: string, subject: Subject<number>): Promise<Buffer> {
