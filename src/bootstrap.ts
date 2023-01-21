@@ -6,10 +6,8 @@ async function init (): Promise<void> {
   await initializeMongo()
 }
 
-export const bootstrap = (executeApp: () => void): void => {
-  init().then(() => {
-    executeApp()
-  }).catch(e => {
+export const bootstrap = (executeApp: () => Promise<void> | void): void => {
+  init().then(() => executeApp()).catch(e => {
     console.log(e)
     process.exit(1)
   })

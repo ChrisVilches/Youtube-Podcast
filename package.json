@@ -6,6 +6,7 @@
     "build": "tsc",
     "dev:api": "ts-node-dev --files src/api.ts",
     "dev:worker": "ts-node-dev --files src/queue-consumer.ts",
+    "dev:websocket": "ts-node-dev --files src/prepare-events-websocket.ts",
     "test": "jest --verbose --setupFiles dotenv/config",
     "lint": "ts-standard --fix"
   },
@@ -23,6 +24,7 @@
     "morgan": "~1.9.1",
     "redis": "^4.5.1",
     "rxjs": "^7.8.0",
+    "socket.io": "^4.5.4",
     "youtubei.js": "^2.7.0"
   },
   "devDependencies": {
