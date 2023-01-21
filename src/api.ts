@@ -15,7 +15,7 @@ import { transcriptionsController } from './controllers/transcriptions'
 bootstrap(() => {
   const app: Express = express()
 
-  const port = Number(process.env.PORT)
+  const port = Number(process.env.API_PORT)
 
   app.use(morgan('combined'))
 

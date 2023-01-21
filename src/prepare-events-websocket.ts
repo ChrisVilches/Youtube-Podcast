@@ -13,7 +13,7 @@ bootstrap(async (): Promise<void> => {
   const app = express()
   const server = createServer(app)
   const io = new Server(server)
-  const port = process.env.PORT ?? 0
+  const port = process.env.SOCKET_IO_PORT ?? 0
   console.log(`Listening (${port})`)
   server.listen(port)
 

@@ -5,7 +5,7 @@ export const homeController = async (_req: Request, res: Response): Promise<void
   const queue = await getVideosQueue()
 
   res.json({
-    port: Number(process.env.PORT),
+    port: Number(process.env.API_PORT),
     env: process.env.NODE_ENV,
     jobs: {
       pending: await queue.getWaitingCount(),
