@@ -11,7 +11,7 @@ bootstrap(async (): Promise<void> => {
   const server = createServer(app)
   const io = new Server(server)
   const port = process.env.SOCKET_IO_PORT ?? 0
-  console.log(`Listening :${port}${io.path()}`)
+  console.log(`Listening. Port: ${port}, path: ${io.path()}`)
   server.listen(port)
 
   io.on('connection', (socket) => {
