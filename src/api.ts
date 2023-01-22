@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 
 import express, { Express, NextFunction } from 'express'
-import { downloadController, prepareController } from './controllers/download'
+import { downloadController } from './controllers/download'
 import { showPlaylistInfoController, playlistPrepareAllController } from './controllers/playlist'
 import { homeController } from './controllers/misc'
 import morgan from 'morgan'

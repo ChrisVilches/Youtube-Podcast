@@ -21,6 +21,7 @@ describe(cleanTitle.name, () => {
     expect(cleanTitle('  title with    many spaces  ')).toBe('title with many spaces')
     expect(cleanTitle('title with many spaces  ')).toBe('title with many spaces')
     expect(cleanTitle('  title with   many  / spaces   and   / / / / / / slashes')).toBe('title with many spaces and slashes')
+    expect(cleanTitle("  my height is 5'10\"")).toBe('my height is 5_10"')
   })
 })
 
@@ -34,7 +35,7 @@ describe(titleToFilename.name, () => {
   })
 
   it('removes single quotes', () => {
-    expect(titleToFilename("this is a 'file'", 'DB5W6qg_1Dx', 'm4a')).toBe('this is a file.m4a')
-    expect(titleToFilename(" '' '''  ''", 'DB5W6qg_1Dx', 'm4a')).toBe('DB5W6qg_1Dx.m4a')
+    expect(titleToFilename("this is a 'file'", 'DB5W6qg_1Dx', 'm4a')).toBe('this is a _file_.m4a')
+    expect(titleToFilename(" '' '''  ''", 'DB5W6qg_1Dx', 'm4a')).toBe('__ ___ __.m4a')
   })
 })

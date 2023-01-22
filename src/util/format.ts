@@ -6,7 +6,7 @@ export const formatDuration = (seconds: number): string => {
   return new Date(seconds * 1000).toISOString().slice(11, 19)
 }
 
-const removeSingleQuotes = (s: string): string => s.replace(/'/g, '')
+const removeSingleQuotes = (s: string): string => s.replace(/'/g, '_')
 const replaceSlash = (s: string): string => s.replace(/\//g, ' ')
 const multipleSpacesToOne = (s: string): string => s.replace(/\s+/g, ' ')
 
