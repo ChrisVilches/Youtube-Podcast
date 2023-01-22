@@ -2,7 +2,7 @@
 
 import express, { Express, NextFunction } from 'express'
 import { downloadController } from './controllers/download'
-import { showPlaylistInfoController, playlistPrepareAllController } from './controllers/playlist'
+import { showPlaylistInfoController } from './controllers/playlist'
 import { homeController } from './controllers/misc'
 import morgan from 'morgan'
 import { errorHandler } from './middlewares/error-handler'
@@ -28,7 +28,6 @@ bootstrap(() => {
   app.get('/transcriptions', transcriptionsController)
   app.get('/download', downloadController)
   app.get('/playlist/:id', showPlaylistInfoController)
-  app.post('/playlist/:id/prepare_all', playlistPrepareAllController)
   app.use('*', (_res, _req, next: NextFunction) => next(createError.NotFound()))
   app.use(errorHandler)
 
