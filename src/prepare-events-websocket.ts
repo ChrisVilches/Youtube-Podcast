@@ -17,7 +17,6 @@ const notifyPrepareFinish = (io: Server, videoId: string, success: boolean): voi
   console.log(`Make socket leave room ${videoId}`)
 }
 
-// TODO: It doesn't need MongoDB. Remove it from the bootstrapper?
 bootstrap(async (): Promise<void> => {
   const app = express()
   const server = createServer(app)
@@ -29,13 +28,14 @@ bootstrap(async (): Promise<void> => {
   io.on('connection', (socket) => {
     console.log('User connected')
 
-    socket.on(EXECUTE_PREPARE_EVENT, async (videoId: string) => {
+    socket.on(EXECUTE_PREPARE_EVENT, async (rawVideoId: any) => {
+      const videoId: string = (rawVideoId ?? '').trim()
       console.log(videoId, 'Joining socket to room')
       await socket.join(videoId)
 
-      // TODO: This is basically the same as the "prepare" API, but perhaps has less checks,
-      //       so make sure it's as robust as the API one.
-      if (await videoExists(videoId)) {
+      if (videoId.length === 0) {
+        notifyPrepareFinish(io, videoId, false)
+      } else if (await videoExists(videoId)) {
         notifyPrepareFinish(io, videoId, true)
       } else {
         await addVideoJob(videoId)

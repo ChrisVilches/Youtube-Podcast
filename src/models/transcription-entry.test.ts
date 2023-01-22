@@ -5,7 +5,7 @@ import { mockTranscriptionResult } from './mock'
 const mock = mockTranscriptionResult
 
 describe(TranscriptionEntry.name, () => {
-  describe('name', () => {
+  it('has correct name', () => {
     expect(TranscriptionEntry.name).toBe('TranscriptionEntry')
   })
 

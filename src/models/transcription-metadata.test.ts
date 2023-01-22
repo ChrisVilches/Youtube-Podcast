@@ -5,7 +5,7 @@ import { VideoBasicInfoModel } from './video-basic-info'
 const mock = mockVideoBasicInfo
 
 describe(TranscriptionMetadata.name, () => {
-  describe('name', () => {
+  it('has correct name', () => {
     expect(TranscriptionMetadata.name).toBe('TranscriptionMetadata')
   })
 

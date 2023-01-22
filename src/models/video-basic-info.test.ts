@@ -4,9 +4,7 @@ import { VideoBasicInfo, VideoBasicInfoModel } from './video-basic-info'
 const mock = mockVideoBasicInfo
 
 describe(VideoBasicInfoModel.modelName, () => {
-  describe('name', () => {
-    // TODO: This test doesn't appear on Jest when running "npm test"... why?
-    //       If it does now, then remove this TODO.
+  it('has correct name', () => {
     expect(VideoBasicInfoModel.modelName).toBe('VideoBasicInfo')
     expect(VideoBasicInfo.name).toBe('VideoBasicInfo')
   })

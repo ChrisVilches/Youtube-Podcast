@@ -2,13 +2,9 @@ import { NextFunction, Request, Response } from 'express'
 import { setVideoAlreadyPrepared } from '../middlewares/set-video-already-prepared'
 import { requireVideoId } from '../middlewares/require-video-id'
 import createError from 'http-errors'
-import { setProgress } from '../middlewares/set-progress'
-import { clearExistingFile } from '../middlewares/clear-existing-file'
 import { videoStream, videoStatObject } from '../services/storage/persisted-files'
 import { updateDownloadStats } from '../middlewares/update-download-stats'
-import { addVideoJob } from '../queues/videos-queue'
 import { videoToFileName } from '../services/download-filename'
-import { createDownloadResponse } from '../middlewares/download-response'
 
 const contentDisposition = async (videoId: string): Promise<string> => {
   const filename = await videoToFileName(videoId, 'm4a')
@@ -49,30 +45,4 @@ const executeDownload = async (req: Request, res: Response, next: NextFunction):
   }
 }
 
-// TODO: Deprecated
-/**
- * @deprecated
- */
-const executePrepare = async (_req: Request, res: Response): Promise<void> => {
-  const videoId: string = res.locals.videoId
-
-  const videoAlreadyPrepared: boolean = res.locals.videoAlreadyPrepared
-
-  if (videoAlreadyPrepared) {
-    res.json(createDownloadResponse(true, 100))
-    return
-  }
-
-  await addVideoJob(videoId)
-
-  const progress = (res.locals.progress as number | null) ?? 0
-
-  res.json(createDownloadResponse(false, progress))
-}
-
-export const downloadController = [requireVideoId, setProgress, setVideoAlreadyPrepared, executeDownload, updateDownloadStats]
-
-/**
- * @deprecated
- */
-export const prepareController = [requireVideoId, setProgress, clearExistingFile, setVideoAlreadyPrepared, executePrepare]
+export const downloadController = [requireVideoId, setVideoAlreadyPrepared, executeDownload, updateDownloadStats]
