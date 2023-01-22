@@ -49,6 +49,10 @@ const executeDownload = async (req: Request, res: Response, next: NextFunction):
   }
 }
 
+// TODO: Deprecated
+/**
+ * @deprecated
+ */
 const executePrepare = async (_req: Request, res: Response): Promise<void> => {
   const videoId: string = res.locals.videoId
 
@@ -67,4 +71,8 @@ const executePrepare = async (_req: Request, res: Response): Promise<void> => {
 }
 
 export const downloadController = [requireVideoId, setProgress, setVideoAlreadyPrepared, executeDownload, updateDownloadStats]
+
+/**
+ * @deprecated
+ */
 export const prepareController = [requireVideoId, setProgress, clearExistingFile, setVideoAlreadyPrepared, executePrepare]

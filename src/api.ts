@@ -24,7 +24,9 @@ bootstrap(() => {
   app.get('/info_raw', videoInfoRawController)
   app.get('/transcriptions', transcriptionsController)
   app.get('/download', downloadController)
-  app.post('/prepare', prepareController)
+
+  // TODO: Remove this and remove its code.
+  // app.post('/prepare', prepareController)
   app.get('/playlist/:id', showPlaylistInfoController)
   app.post('/playlist/:id/prepare_all', playlistPrepareAllController)
   app.use('*', (_res, _req, next: NextFunction) => next(createError.NotFound()))
