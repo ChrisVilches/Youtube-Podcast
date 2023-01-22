@@ -1,20 +1,17 @@
-import { createClient } from 'redis'
 import { bootstrap } from './bootstrap'
 import { Server } from 'socket.io'
 import express from 'express'
 import { createServer } from 'http'
 import { PREPARE_EVENTS_CHANNEL } from './channels/prepare-events-channel'
+import { getRedisClient } from './services/storage/redis-client'
 
 // TODO: It doesn't need MongoDB. Remove it from the bootstrapper?
 bootstrap(async (): Promise<void> => {
-  const client = createClient({ url: process.env.REDIS_URL })
-  await client.connect()
-
   const app = express()
   const server = createServer(app)
   const io = new Server(server)
   const port = process.env.SOCKET_IO_PORT ?? 0
-  console.log(`Listening (${port})`)
+  console.log(`Listening :${port}${io.path()}`)
   server.listen(port)
 
   io.on('connection', (socket) => {
@@ -31,6 +28,8 @@ bootstrap(async (): Promise<void> => {
       // TODO: Cleanup necessary?
     })
   })
+
+  const client = await getRedisClient()
 
   client.subscribe(PREPARE_EVENTS_CHANNEL, (message: string) => {
     const { videoId, success } = JSON.parse(message)

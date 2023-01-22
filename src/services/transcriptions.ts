@@ -4,11 +4,6 @@ import { TranscriptionResult, TranscriptionResultModel } from '../models/transcr
 import { VideoBasicInfo } from '../models/video-basic-info'
 import { xmlTranscriptionToJson } from '../util/xml'
 
-// TODO: I think the best way to do this is to convert the XML to JSON (keep the timestamps)
-//       and save it like that. Maybe with some simple cleaning. Then let the frontend clean it.
-//       But for summaries, I'd also probably have to clean it myself too. So maybe just store both
-//       in the same document.
-
 const getDesiredTranscription = (metadata: VideoBasicInfo, lang?: string): TranscriptionMetadata => {
   const transcriptions = metadata.transcriptions ?? []
 

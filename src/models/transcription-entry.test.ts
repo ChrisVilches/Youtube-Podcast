@@ -4,10 +4,11 @@ import { mockTranscriptionResult } from './mock'
 
 const mock = mockTranscriptionResult
 
-// TODO: OK?
-console.assert(TranscriptionEntry.name === 'TranscriptionEntry')
-
 describe(TranscriptionEntry.name, () => {
+  describe('name', () => {
+    expect(TranscriptionEntry.name).toBe('TranscriptionEntry')
+  })
+
   describe('validations', () => {
     it('does not allow unsorted start times', async () => {
       const t: TranscriptionResult = mock()

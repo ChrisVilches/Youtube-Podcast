@@ -19,10 +19,7 @@ const getTranscriptions = async (req: Request, res: Response, next: NextFunction
     metadata.validateCanDownload()
     const desiredLang = req.query.lang as string | undefined
     const result: TranscriptionResult = await fetchTranscriptions(metadata, desiredLang)
-    // TODO: Should be json (+ text cleaning)
-    // TODO: Consider implementing the "cleaning" process in the TranscriptionResultModel itself.
     res.json(result)
-    // res.json(transcription)
   } catch (e) {
     next(createError.BadRequest((e as Error).message))
   }

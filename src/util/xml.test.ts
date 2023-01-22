@@ -29,12 +29,12 @@ const smallValidXml = `
 </note>
 `
 
-// TODO: Japanese and quotes, symbols, etc.
 const validWithUtf8 = `
 <?xml version="1.0" encoding="utf-8" ?>
 <transcript>
   <text start="2.639" dur="3.901">I don&amp;#39;t really know</text>
   <text start="32.41" dur="4.829">ないですかねじゃあ確保してないと驚くと</text>
+  <text start="32.41" dur="4.829">Here are some symbols $¥/.,""</text>
 </transcript>
 `
 
@@ -49,7 +49,7 @@ describe(xmlTranscriptionToJson.name, () => {
 
   it('parses the XML correctly (entries length)', () => {
     const result: TranscriptionEntry[] = xmlTranscriptionToJson(validWithUtf8)
-    expect(result.length).toBe(2)
+    expect(result.length).toBe(3)
   })
 
   it('cannot parse a valid XML that has unexpected format', () => {
@@ -64,6 +64,11 @@ describe(xmlTranscriptionToJson.name, () => {
   it('parses Japanese correctly', () => {
     const result: TranscriptionEntry[] = xmlTranscriptionToJson(validWithUtf8)
     expect(result[1].text).toBe('ないですかねじゃあ確保してないと驚くと')
+  })
+
+  it('parses symbols correctly', () => {
+    const result: TranscriptionEntry[] = xmlTranscriptionToJson(validWithUtf8)
+    expect(result[2].text).toBe('Here are some symbols $¥/.,""')
   })
 
   it('returns sorted timestamps', () => {

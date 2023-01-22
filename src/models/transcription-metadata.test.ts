@@ -4,10 +4,11 @@ import { VideoBasicInfoModel } from './video-basic-info'
 
 const mock = mockVideoBasicInfo
 
-// TODO: Does this owrk? If not, the test name is wrong
-console.assert(TranscriptionMetadata.name === 'TranscriptionMetadata')
-
 describe(TranscriptionMetadata.name, () => {
+  describe('name', () => {
+    expect(TranscriptionMetadata.name).toBe('TranscriptionMetadata')
+  })
+
   describe('validations', () => {
     it('accepts an undefined array (and converts it to empty array)', async () => {
       const v = mock({ transcriptions: undefined })

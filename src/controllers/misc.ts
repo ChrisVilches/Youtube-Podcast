@@ -10,8 +10,6 @@ export const homeController = async (_req: Request, res: Response): Promise<void
     jobs: {
       pending: await queue.getWaitingCount(),
       active: await queue.getActiveCount(),
-      // TODO: It might be necessary to set removeOnFail = true
-      //       And in that case, it might make sense to remove this field (because it'd always be 0).
       failed: await queue.getFailedCount()
     }
   })
