@@ -1,4 +1,4 @@
-import { parseVideoId } from './youtube-url'
+import { parseVideoId, urlWithoutQueryString } from './youtube-url'
 
 describe(parseVideoId.name, () => {
   it('parses watch?v= correctly', () => {
@@ -40,5 +40,14 @@ describe(parseVideoId.name, () => {
     expect(parseVideoId('https://YOUTUBE.com/eMBED/OLB7JYl34y4')).toBe('OLB7JYl34y4')
     expect(parseVideoId('https://www.youtube.com/embed/ho8fvPH_Ro0?someparam=123')).toBe('ho8fvPH_Ro0')
     expect(parseVideoId('https://YOUTUBE.com/eMBED/OLB7JYl34y4?someflag')).toBe('OLB7JYl34y4')
+  })
+})
+
+describe(urlWithoutQueryString.name, () => {
+  it('removes the query string correctly', () => {
+    expect(urlWithoutQueryString('https://www.youtube.com')).toBe('https://www.youtube.com/')
+    expect(urlWithoutQueryString('https://www.youtube.com/')).toBe('https://www.youtube.com/')
+    expect(urlWithoutQueryString('https://www.youtube.com/watch?v=LrQuTGz7bjQ&ab_channel=ColoresdeJapon')).toBe('https://www.youtube.com/watch')
+    expect(urlWithoutQueryString('https://i.ytimg.com/vi/mMllwA-BQ08/hqdefault.jpg?sqp=-oaymw==&rs=AOn4CLCQ')).toBe('https://i.ytimg.com/vi/mMllwA-BQ08/hqdefault.jpg')
   })
 })

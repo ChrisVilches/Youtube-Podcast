@@ -1,6 +1,7 @@
 import { BucketItemStat, UploadedObjectInfo } from 'minio'
 import internal from 'stream'
 import { BUCKET_NAME, getMinioClient } from './minio-client'
+import { m4aAddMetadata } from '../../util/ffmpeg-metadata'
 
 export const videoExists = async (videoId: string): Promise<boolean> => {
   const client = await getMinioClient()
@@ -30,6 +31,8 @@ export const persistVideo = async (videoId: string, videoTitle: string, fileCont
     'Content-Type': 'application/octet-stream',
     'Original-Title-Encoded': encodeURI(videoTitle)
   }
+
+  fileContent = await m4aAddMetadata(videoId, fileContent)
 
   return await client.putObject(BUCKET_NAME, videoId, fileContent, metaData)
 }

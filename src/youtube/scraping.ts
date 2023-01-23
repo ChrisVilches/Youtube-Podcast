@@ -38,14 +38,16 @@ export async function fetchAndSaveBasicInfo (videoId: string): Promise<VideoBasi
   const yt = await getInnertube()
   const data: VideoInfo = await yt.getBasicInfo(videoId)
 
-  const { title, duration, short_description: description, thumbnail: thumbnails } = data.basic_info
+  const { title, duration, short_description: description, thumbnail: thumbnails, channel } = data.basic_info
 
   const lengthBytes: number | undefined = extractLengthBytes(data)
   const transcriptions: TranscriptionMetadata[] = data.captions?.caption_tracks.map(data => ({ name: data.name.text, url: data.base_url, lang: data.language_code })) ?? []
+  const author: string | undefined = channel?.name
 
   return await VideoBasicInfoModel.findOneAndUpdate({ videoId }, {
     duration: duration ?? 0,
     title: title ?? '',
+    author,
     description: description ?? '',
     thumbnails: thumbnails ?? [],
     lengthBytes,

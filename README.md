@@ -8,22 +8,29 @@ Transcription, frontend and content summarization features coming soon.
 
 Installation:
 
-```
+```sh
 nvm use
 npm install
 ```
 
 Configure the `.env` file.
 
+Make sure `ffmpeg` is installed.
+
+```sh
+ffmpeg -version
+ffmpeg version 4.4.2-0ubuntu0.22.04.1 Copyright (c) 2000-2021 the FFmpeg developers
+```
+
 API:
 
-```
+```sh
 npm run dev:api
 ```
 
 Worker:
 
-```
+```sh
 npm run dev:worker
 ```
 
@@ -35,6 +42,7 @@ npm run dev:worker
 * Redis
 * MinIO
 * Jest
+* ffmpeg
 * Other libraries (Bull, Youtube.js, RxJS, Mongoose, Typegoose, etc)
 
 ## Limitations

@@ -1,3 +1,5 @@
+import { parse } from 'node:url'
+
 const getVideoIdFromWatch = (url: string): string | undefined => {
   const u = new URL(url)
   const query = new URLSearchParams(u.search)
@@ -44,4 +46,13 @@ export const parseVideoId = (str?: string): string | undefined => {
   }
 
   return undefined
+}
+
+export const urlWithoutQueryString = (url: string): string => {
+  const u = parse(url)
+  if (u.protocol === null || u.host === null || u.pathname === null) {
+    throw new Error(`Invalid URL: ${url}`)
+  }
+
+  return `${u.protocol}//${u.host}${u.pathname}`
 }
