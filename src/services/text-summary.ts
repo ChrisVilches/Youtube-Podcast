@@ -1,5 +1,6 @@
-// TODO: Implement this correctly
-//       I think this doesn't need to be cached (the caller caches it)
+/**
+ * Returns a non-cached (the caller should cache it) summary of the text.
+ */
 export const summarizeText = async (text: string, lang: string): Promise<string | undefined> => {
-  return `(DUMMY, must implement) This is some random summary (lang = ${lang}). Text has ${text.length} characters ${Math.random()}`
+  throw new Error('Function not implemented.')
 }

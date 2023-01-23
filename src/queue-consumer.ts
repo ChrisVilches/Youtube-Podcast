@@ -33,7 +33,6 @@ const getCachedBasicInfo = async (videoId: string): Promise<VideoBasicInfo> => {
 }
 
 const publishEvent = async (videoId: string, success: boolean): Promise<void> => {
-  console.log(videoId, success)
   const client = await getRedisClient()
   await client.publish(PREPARE_EVENTS_CHANNEL, JSON.stringify({ videoId, success }))
 }
