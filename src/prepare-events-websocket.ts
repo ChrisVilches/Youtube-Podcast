@@ -4,7 +4,7 @@ import express from 'express'
 import { createServer } from 'http'
 import { PREPARE_EVENTS_CHANNEL } from './channels/prepare-events-channel'
 import { getRedisClient } from './services/storage/redis-client'
-import { videoExists } from './services/storage/persisted-files'
+import { removeVideo, videoExists } from './services/storage/persisted-files'
 import { addVideoJob } from './queues/videos-queue'
 
 const PREPARED_RESULT_EVENT = 'prepared-result'
@@ -32,6 +32,8 @@ bootstrap(async (): Promise<void> => {
       const videoId: string = (rawVideoId ?? '').trim()
       console.log(videoId, 'Joining socket to room')
       await socket.join(videoId)
+
+      // await removeVideo(videoId)
 
       if (videoId.length === 0) {
         notifyPrepareFinish(io, videoId, false)

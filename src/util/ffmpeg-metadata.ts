@@ -4,6 +4,7 @@ import { urlWithoutQueryString } from './youtube-url'
 import ffmpeg from 'fluent-ffmpeg'
 import { open, readFile } from 'fs/promises'
 import { unlinkSync } from 'node:fs'
+import crypto from 'crypto'
 
 const safeMetadata = (field: string, value: string): string => `${field}=${value.replace(/"/g, String.raw`\"`)}`
 
@@ -55,6 +56,7 @@ export const m4aAddMetadata = async (videoId: string, fileContent: Buffer): Prom
       .on('end', () => {
         readFile(tmpFileResultPath)
           .then((buffer: Buffer) => {
+            // TODO: Does it remove all tmp files correctly????
             unlinkSync(tmpFilePath)
             unlinkSync(thumbnailPath)
             unlinkSync(tmpFileResultPath)

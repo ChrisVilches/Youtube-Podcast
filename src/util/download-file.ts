@@ -1,6 +1,9 @@
 import { createWriteStream } from 'node:fs'
+import { WritableStream } from 'node:stream/web'
 
 export const downloadFile = async (url: string, path: string): Promise<void> => {
+  console.log('Downloading...')
+  console.log(url)
   const res = await fetch(url)
   const body: ReadableStream<Uint8Array> | null = res.body
   const fileStream = createWriteStream(path)
