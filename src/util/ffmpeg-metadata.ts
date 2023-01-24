@@ -32,7 +32,7 @@ const getValidJPGThumbnailURL = (metadata: VideoBasicInfo): string => {
 }
 
 const fileSizeMB = (filepath: string): number => {
-  const stats = statSync(tmpFilePath)
+  const stats = statSync(filepath)
   const fileSizeInBytes = stats.size
   return fileSizeInBytes / (1024 * 1024)
 }
