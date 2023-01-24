@@ -62,15 +62,19 @@ export const m4aAddMetadata = async (videoId: string, fileContent: Buffer): Prom
       .outputOption('-metadata', safeMetadata('title', metadata.title))
       .outputOption('-disposition:0', 'attached_pic')
       .on('end', () => {
+        console.log('Removing tmp files')
+        console.log(tmpFilePath)
+        console.log(thumbnailPath)
+        console.log(tmpFileResultPath)
+
+        unlinkSync(tmpFilePath)
+        unlinkSync(thumbnailPath)
+        unlinkSync(tmpFileResultPath)
+        console.log(`After adding metadata ${fileSizeMB(tmpFileResultPath)} MB`)
+        // TODO: Does it remove all tmp files correctly????
+
         readFile(tmpFileResultPath)
-          .then((buffer: Buffer) => {
-            console.log(`After adding metadata ${fileSizeMB(tmpFileResultPath)} MB`)
-            // TODO: Does it remove all tmp files correctly????
-            unlinkSync(tmpFilePath)
-            unlinkSync(thumbnailPath)
-            unlinkSync(tmpFileResultPath)
-            resolve(buffer)
-          })
+          .then(resolve)
           .catch(reject)
       })
       .on('error', reject)
