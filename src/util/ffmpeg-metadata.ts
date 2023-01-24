@@ -3,7 +3,7 @@ import { downloadFile } from './download-file'
 import { urlWithoutQueryString } from './youtube-url'
 import ffmpeg from 'fluent-ffmpeg'
 import { open, readFile } from 'fs/promises'
-import { unlinkSync } from 'node:fs'
+import { statSync, unlinkSync } from 'node:fs'
 import crypto from 'crypto'
 
 const safeMetadata = (field: string, value: string): string => `${field}=${value.replace(/"/g, String.raw`\"`)}`
@@ -31,6 +31,12 @@ const getValidJPGThumbnailURL = (metadata: VideoBasicInfo): string => {
   return thumbnailUrl
 }
 
+const fileSizeMB = (filepath: string): number => {
+  const stats = statSync(tmpFilePath)
+  const fileSizeInBytes = stats.size
+  return fileSizeInBytes / (1024 * 1024)
+}
+
 export const m4aAddMetadata = async (videoId: string, fileContent: Buffer): Promise<Buffer> => {
   const tmpUUID: string = crypto.randomUUID()
 
@@ -43,6 +49,7 @@ export const m4aAddMetadata = async (videoId: string, fileContent: Buffer): Prom
   const fileHandle = await open(tmpFilePath, 'w')
   await fileHandle.write(fileContent)
   await fileHandle.close()
+  console.log(`Before adding metadata ${fileSizeMB(tmpFilePath)} MB`)
 
   return await new Promise<Buffer>((resolve, reject) => {
     ffmpeg()
@@ -56,6 +63,7 @@ export const m4aAddMetadata = async (videoId: string, fileContent: Buffer): Prom
       .on('end', () => {
         readFile(tmpFileResultPath)
           .then((buffer: Buffer) => {
+            console.log(`After adding metadata ${fileSizeMB(tmpFileResultPath)} MB`)
             // TODO: Does it remove all tmp files correctly????
             unlinkSync(tmpFilePath)
             unlinkSync(thumbnailPath)
