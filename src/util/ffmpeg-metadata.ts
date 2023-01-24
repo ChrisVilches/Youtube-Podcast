@@ -21,6 +21,8 @@ const isJpgExtension = (url: string): boolean => url.toLowerCase().endsWith('.jp
  * (ffmpeg needs a JPG image.)
  *
  * It's assumed that all videos have at least one valid .jpg file (must monitor this).
+ *
+ * When attaching the file using ffmpeg, it's not necessary that the file has the .jpg extension.
  */
 const getValidJPGThumbnailURL = (metadata: VideoBasicInfo): string => {
   const availableThumbnailUrls = metadata.thumbnails
@@ -50,7 +52,7 @@ export const m4aAddMetadata = async (videoId: string, fileContent: Buffer): Prom
 
   const thumbnailPath: string = createTmpFilePath(`${videoId}_thumbnail`)
   const tmpFilePath = createTmpFilePath(videoId)
-  const tmpFileResultPath = createTmpFilePath(`${videoId}.m4a`)
+  const tmpFileResultPath = createTmpFilePath(`${videoId}_with_metadata`)
 
   await downloadFile(getValidJPGThumbnailURL(metadata), thumbnailPath)
 
@@ -83,9 +85,7 @@ export const m4aAddMetadata = async (videoId: string, fileContent: Buffer): Prom
         // TODO: Does it remove all tmp files correctly????
       })
       .on('error', reject)
-      // TODO: I think it only works with the .m4a, but it should work without it as well. Why?
-      // TODO: I want to try adding a suffix like "_result" instead of "m4a" in order to avoid
-      //       hardcoding extensions.
+      .outputOption('-f', 'ipod') // same as m4a.
       .save(tmpFileResultPath)
   })
 }
