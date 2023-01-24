@@ -2,10 +2,11 @@ import { VideoBasicInfo, VideoBasicInfoModel } from '../models/video-basic-info'
 import { downloadFile } from './download-file'
 import { urlWithoutQueryString } from './youtube-url'
 import ffmpeg from 'fluent-ffmpeg'
-import { open, readFile } from 'fs/promises'
-import { statSync, unlinkSync } from 'node:fs'
+import { open } from 'fs/promises'
+import { statSync, unlinkSync, readFileSync } from 'node:fs'
 import crypto from 'crypto'
 
+// TODO: The only problem is that \" is shown. Other than that it seems to work OK for everything else.
 const safeMetadata = (field: string, value: string): string => `${field}=${value.replace(/"/g, String.raw`\"`)}`
 
 const isJpgExtension = (url: string): boolean => url.toLowerCase().endsWith('.jpg') || url.toLowerCase().endsWith('.jpeg')
@@ -40,10 +41,17 @@ const fileSizeMB = (filepath: string): number => {
 export const m4aAddMetadata = async (videoId: string, fileContent: Buffer): Promise<Buffer> => {
   const tmpUUID: string = crypto.randomUUID()
 
+  const tmpPrefix = `/tmp/yt-${tmpUUID}-`
+  console.log('TMP files prefix:')
+  console.log(tmpPrefix)
+  const createTmpFilePath = (path: string): string => `${tmpPrefix}${path}`
+
   const metadata: VideoBasicInfo = await VideoBasicInfoModel.findOne({ videoId }) as VideoBasicInfo
-  const thumbnailPath: string = `/tmp/yt-${tmpUUID}-${videoId}_thumbnail.jpg`
-  const tmpFilePath = `/tmp/yt-${tmpUUID}-${videoId}`
-  const tmpFileResultPath = tmpFilePath + '.m4a'
+
+  const thumbnailPath: string = createTmpFilePath(`${videoId}_thumbnail`)
+  const tmpFilePath = createTmpFilePath(videoId)
+  const tmpFileResultPath = createTmpFilePath(`${videoId}.m4a`)
+
   await downloadFile(getValidJPGThumbnailURL(metadata), thumbnailPath)
 
   const fileHandle = await open(tmpFilePath, 'w')
@@ -62,20 +70,17 @@ export const m4aAddMetadata = async (videoId: string, fileContent: Buffer): Prom
       .outputOption('-metadata', safeMetadata('title', metadata.title))
       .outputOption('-disposition:0', 'attached_pic')
       .on('end', () => {
-        console.log('Removing tmp files')
-        console.log(tmpFilePath)
-        console.log(thumbnailPath)
-        console.log(tmpFileResultPath)
-
-        unlinkSync(tmpFilePath)
-        unlinkSync(thumbnailPath)
-        unlinkSync(tmpFileResultPath)
-        console.log(`After adding metadata ${fileSizeMB(tmpFileResultPath)} MB`)
+        try {
+          const buffer = readFileSync(tmpFileResultPath)
+          console.log(`After adding metadata ${fileSizeMB(tmpFileResultPath)} MB`)
+          unlinkSync(tmpFilePath)
+          unlinkSync(thumbnailPath)
+          unlinkSync(tmpFileResultPath)
+          resolve(buffer)
+        } catch (e) {
+          reject(e)
+        }
         // TODO: Does it remove all tmp files correctly????
-
-        readFile(tmpFileResultPath)
-          .then(resolve)
-          .catch(reject)
       })
       .on('error', reject)
       // TODO: I think it only works with the .m4a, but it should work without it as well. Why?
