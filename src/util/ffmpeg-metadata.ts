@@ -40,12 +40,12 @@ const fileSizeMB = (filepath: string): number => {
   return fileSizeInBytes / (1024 * 1024)
 }
 
+const M4A_FORMAT = 'ipod'
+
 export const m4aAddMetadata = async (videoId: string, fileContent: Buffer): Promise<Buffer> => {
   const tmpUUID: string = crypto.randomUUID()
 
   const tmpPrefix = `/tmp/yt-${tmpUUID}-`
-  console.log('TMP files prefix:')
-  console.log(tmpPrefix)
   const createTmpFilePath = (path: string): string => `${tmpPrefix}${path}`
 
   const metadata: VideoBasicInfo = await VideoBasicInfoModel.findOne({ videoId }) as VideoBasicInfo
@@ -71,6 +71,8 @@ export const m4aAddMetadata = async (videoId: string, fileContent: Buffer): Prom
       .outputOption('-metadata', safeMetadata('artist', metadata.author ?? 'Unknown artist'))
       .outputOption('-metadata', safeMetadata('title', metadata.title))
       .outputOption('-disposition:0', 'attached_pic')
+      .outputOption('-f', M4A_FORMAT)
+      .save(tmpFileResultPath)
       .on('end', () => {
         try {
           const buffer = readFileSync(tmpFileResultPath)
@@ -82,10 +84,7 @@ export const m4aAddMetadata = async (videoId: string, fileContent: Buffer): Prom
         } catch (e) {
           reject(e)
         }
-        // TODO: Does it remove all tmp files correctly????
       })
       .on('error', reject)
-      .outputOption('-f', 'ipod') // same as m4a.
-      .save(tmpFileResultPath)
   })
 }
