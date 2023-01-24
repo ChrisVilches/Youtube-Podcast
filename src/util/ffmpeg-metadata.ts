@@ -59,6 +59,7 @@ export const m4aAddMetadata = async (videoId: string, fileContent: Buffer): Prom
       .outputOption('-map', '1')
       .outputOption('-map', '0')
       .outputOption('-metadata', safeMetadata('artist', metadata.author ?? 'Unknown artist'))
+      .outputOption('-metadata', safeMetadata('title', metadata.title))
       .outputOption('-disposition:0', 'attached_pic')
       .on('end', () => {
         readFile(tmpFileResultPath)
