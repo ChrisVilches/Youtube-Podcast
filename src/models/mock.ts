@@ -4,6 +4,7 @@ import { VideoBasicInfo, VideoBasicInfoModel } from './video-basic-info'
 export const mockVideoBasicInfo = (args: any = {}): VideoBasicInfo => new VideoBasicInfoModel(Object.assign({
   videoId: 'AAAAAA',
   title: 'some title',
+  author: 'the-author',
   duration: 1000,
   description: 'some description',
   lengthBytes: 1000,
