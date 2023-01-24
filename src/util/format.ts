@@ -24,17 +24,13 @@ const INVALID_CHARS = [
   ';',
   '=',
   "'"
-].map((c: string) => new RegExp(`\\${c}`, 'g'))
+]
+  .map((c: string) => `\\${c}`)
+  .join('')
 
-const removeInvalidChars = (s: string): string => {
-  let result = s
+const INVALID_CHARS_REGEX = new RegExp(`[${INVALID_CHARS}]`, 'g')
 
-  for (const regex of INVALID_CHARS) {
-    result = result.replace(regex, '_')
-  }
-
-  return result
-}
+const removeInvalidChars = (s: string): string => s.replace(INVALID_CHARS_REGEX, '_')
 
 export const cleanTitle = (title: string): string => multipleSpacesToOne(removeInvalidChars(title)).trim()
 
