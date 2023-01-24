@@ -26,8 +26,8 @@ export class VideoBasicInfo extends Base {
   @prop({ required: true })
   public title!: string
 
-  @prop({ required: false })
-  public author?: string
+  @prop({ required: true })
+  public author!: string
 
   @prop({ required: true })
   public duration!: number

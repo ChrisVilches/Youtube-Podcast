@@ -42,7 +42,7 @@ export async function fetchAndSaveBasicInfo (videoId: string): Promise<VideoBasi
 
   const lengthBytes: number | undefined = extractLengthBytes(data)
   const transcriptions: TranscriptionMetadata[] = data.captions?.caption_tracks.map(data => ({ name: data.name.text, url: data.base_url, lang: data.language_code })) ?? []
-  const author: string | undefined = channel?.name
+  const author: string = channel?.name ?? ''
 
   return await VideoBasicInfoModel.findOneAndUpdate({ videoId }, {
     duration: duration ?? 0,
@@ -97,6 +97,7 @@ export async function getPlayList (id: string): Promise<PlaylistInfo> {
     author: res.info.author.name,
     items: res.items.map((item: any): VideoBasicInfo => new VideoBasicInfoModel({
       videoId: item.id,
+      author: item.author.name,
       title: item.title.runs[0].text as string,
       duration: item.duration.seconds as number,
       description: '',
