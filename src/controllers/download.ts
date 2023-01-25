@@ -38,6 +38,8 @@ const executeDownload = async (req: Request, res: Response, next: NextFunction):
     res.setHeader('ETag', stat.etag)
     res.setHeader('Content-Disposition', await contentDisposition(videoId))
     res.setHeader('Content-Transfer-Encoding', 'binary')
+    // TODO: Maybe it should be audio/mp4 or something more specific.
+    // In fact I think Android doesn't recognize these files as audio when I browse the Files app.
     res.setHeader('Content-Type', 'application/octet-stream')
 
     const stream = await videoStream(videoId)

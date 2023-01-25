@@ -27,6 +27,7 @@ export const videoOriginalTitle = async (videoId: string): Promise<string> => {
 export const persistVideo = async (videoId: string, videoTitle: string, fileContent: Buffer): Promise<UploadedObjectInfo> => {
   const client = await getMinioClient()
 
+  // TODO: Maybe it should be audio/mp4 or something more specific.
   const metaData = {
     'Content-Type': 'application/octet-stream',
     'Original-Title-Encoded': encodeURI(videoTitle)

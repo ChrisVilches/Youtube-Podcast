@@ -6,8 +6,7 @@ import { open } from 'fs/promises'
 import { statSync, unlinkSync, readFileSync } from 'node:fs'
 import crypto from 'crypto'
 
-// TODO: The only problem is that \" is shown. Other than that it seems to work OK for everything else.
-const safeMetadata = (field: string, value: string): string => `${field}=${value.replace(/"/g, String.raw`\"`)}`
+const safeMetadata = (field: string, value: string): string => `${field}=${value}`
 
 const isJpgExtension = (url: string): boolean => url.toLowerCase().endsWith('.jpg') || url.toLowerCase().endsWith('.jpeg')
 
