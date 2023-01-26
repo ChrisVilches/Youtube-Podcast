@@ -12,15 +12,7 @@ const contentDisposition = async (videoId: string): Promise<string> => {
   return `attachment; filename*=UTF-8''${encodedFilename}`
 }
 
-// TODO: This controller has a few problems.
-//       * Download count is increased at times that depend on how it's deployed (with or without Nginx)
-//       * Too many custom headers (not necessarily a problem, but may fail)
-//       * Not using the res.download function. Also not necessarily a problem though.
-//       * Haven't implemented the frontend app, so this may change anyway.
-//
-//       I think the best way to go about this is to just wait until the frontend app is implemented,
-//       and start modifying this from there.
-const executeDownload = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+const setDownloadHeaders = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   const videoId: string = res.locals.videoId
 
   if (!(res.locals.videoAlreadyPrepared as boolean)) {
@@ -33,18 +25,32 @@ const executeDownload = async (req: Request, res: Response, next: NextFunction):
   // TODO: Header 'if-none-match' is not sent when using Firefox.
   if (stat.etag === req.headers['if-none-match']) {
     res.sendStatus(304)
-  } else {
-    res.setHeader('Content-Length', stat.size)
-    res.setHeader('ETag', stat.etag)
-    res.setHeader('Content-Disposition', await contentDisposition(videoId))
-    res.setHeader('Content-Transfer-Encoding', 'binary')
-    // TODO: Maybe it should be audio/mp4 or something more specific.
-    // In fact I think Android doesn't recognize these files as audio when I browse the Files app.
-    res.setHeader('Content-Type', 'application/octet-stream')
-
-    const stream = await videoStream(videoId)
-    stream.pipe(res).on('finish', next)
+    return
   }
+
+  res.setHeader('Content-Length', stat.size)
+  res.setHeader('ETag', stat.etag)
+  res.setHeader('Content-Disposition', await contentDisposition(videoId))
+  res.setHeader('Content-Transfer-Encoding', 'binary')
+  // TODO: Maybe it should be audio/mp4 or something more specific.
+  // In fact I think Android doesn't recognize these files as audio when I browse the Files app.
+  res.setHeader('Content-Type', 'application/octet-stream')
+  next()
 }
 
-export const downloadController = [requireVideoId, setVideoAlreadyPrepared, executeDownload, updateDownloadStats]
+// TODO: This controller has a few problems.
+//       * Download count is increased at times that depend on how it's deployed (with or without Nginx)
+//       * Too many custom headers (not necessarily a problem, but may fail)
+//       * Not using the res.download function. Also not necessarily a problem though.
+//       * Haven't implemented the frontend app, so this may change anyway.
+//
+//       I think the best way to go about this is to just wait until the frontend app is implemented,
+//       and start modifying this from there.
+const executeDownload = async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
+  const videoId: string = res.locals.videoId
+  const stream = await videoStream(videoId)
+  stream.pipe(res).on('finish', next)
+}
+
+export const downloadController = [requireVideoId, setVideoAlreadyPrepared, setDownloadHeaders, executeDownload, updateDownloadStats]
+export const downloadHeadController = [requireVideoId, setVideoAlreadyPrepared, setDownloadHeaders]

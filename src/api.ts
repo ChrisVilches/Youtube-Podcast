@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-misused-promises */
 
 import express, { Express, NextFunction } from 'express'
-import { downloadController } from './controllers/download'
+import { downloadController, downloadHeadController } from './controllers/download'
 import { showPlaylistInfoController } from './controllers/playlist'
 import { homeController } from './controllers/misc'
 import morgan from 'morgan'
@@ -24,6 +24,7 @@ bootstrap(() => {
   app.get('/info_raw', videoInfoRawController)
   app.get('/transcriptions', transcriptionsController)
   app.get('/download', downloadController)
+  app.head('/download', downloadHeadController)
   app.get('/playlist/:id', showPlaylistInfoController)
   app.use('*', (_res, _req, next: NextFunction) => next(createError.NotFound()))
   app.use(errorHandler)

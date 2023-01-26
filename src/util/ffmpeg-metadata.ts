@@ -6,6 +6,8 @@ import { open } from 'fs/promises'
 import { statSync, unlinkSync, readFileSync } from 'node:fs'
 import crypto from 'crypto'
 
+const FILE_METADATA_ALBUM_NAME = 'Youtube Podcast'
+
 const safeMetadata = (field: string, value: string): string => `${field}=${value}`
 
 const isJpgExtension = (url: string): boolean => url.toLowerCase().endsWith('.jpg') || url.toLowerCase().endsWith('.jpeg')
@@ -69,6 +71,7 @@ export const m4aAddMetadata = async (videoId: string, fileContent: Buffer): Prom
       .outputOption('-map', '0')
       .outputOption('-metadata', safeMetadata('artist', metadata.author ?? 'Unknown artist'))
       .outputOption('-metadata', safeMetadata('title', metadata.title))
+      .outputOption('-metadata', safeMetadata('album', FILE_METADATA_ALBUM_NAME))
       .outputOption('-disposition:0', 'attached_pic')
       .outputOption('-f', M4A_FORMAT)
       .save(tmpFileResultPath)
