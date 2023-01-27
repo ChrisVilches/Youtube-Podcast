@@ -5,9 +5,10 @@ import createError from 'http-errors'
 import { videoStream, videoStatObject } from '../services/storage/persisted-files'
 import { updateDownloadStats } from '../middlewares/update-download-stats'
 import { videoToFileName } from '../services/download-filename'
+import { FILE_CONTENT_TYPE, FILE_DOWNLOAD_EXTENSION } from '../services/storage/constants'
 
 const contentDisposition = async (videoId: string): Promise<string> => {
-  const filename = await videoToFileName(videoId, 'm4a')
+  const filename = await videoToFileName(videoId, FILE_DOWNLOAD_EXTENSION)
   const encodedFilename = encodeURIComponent(filename)
   return `attachment; filename*=UTF-8''${encodedFilename}`
 }
@@ -32,9 +33,7 @@ const setDownloadHeaders = async (req: Request, res: Response, next: NextFunctio
   res.setHeader('ETag', stat.etag)
   res.setHeader('Content-Disposition', await contentDisposition(videoId))
   res.setHeader('Content-Transfer-Encoding', 'binary')
-  // TODO: Maybe it should be audio/mp4 or something more specific.
-  // In fact I think Android doesn't recognize these files as audio when I browse the Files app.
-  res.setHeader('Content-Type', 'application/octet-stream')
+  res.setHeader('Content-Type', FILE_CONTENT_TYPE)
   next()
 }
 

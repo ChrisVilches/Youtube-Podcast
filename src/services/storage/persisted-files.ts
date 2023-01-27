@@ -2,6 +2,7 @@ import { BucketItemStat, UploadedObjectInfo } from 'minio'
 import internal from 'stream'
 import { BUCKET_NAME, getMinioClient } from './minio-client'
 import { m4aAddMetadata } from '../../util/ffmpeg-metadata'
+import { FILE_CONTENT_TYPE } from './constants'
 
 export const videoExists = async (videoId: string): Promise<boolean> => {
   const client = await getMinioClient()
@@ -27,9 +28,8 @@ export const videoOriginalTitle = async (videoId: string): Promise<string> => {
 export const persistVideo = async (videoId: string, videoTitle: string, fileContent: Buffer): Promise<UploadedObjectInfo> => {
   const client = await getMinioClient()
 
-  // TODO: Maybe it should be audio/mp4 or something more specific.
   const metaData = {
-    'Content-Type': 'application/octet-stream',
+    'Content-Type': FILE_CONTENT_TYPE,
     'Original-Title-Encoded': encodeURI(videoTitle)
   }
 

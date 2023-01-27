@@ -20,6 +20,7 @@
     "fluent-ffmpeg": "^2.1.2",
     "he": "^1.2.0",
     "http-errors": "~1.6.3",
+    "mime": "^3.0.0",
     "minio": "^7.0.32",
     "mmmagic": "^0.5.3",
     "mongoose": "^6.8.3",
