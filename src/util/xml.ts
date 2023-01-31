@@ -35,7 +35,7 @@ export const xmlTranscriptionToJson = (xml: string): TranscriptionEntry[] => {
       }
 
       const entry = new TranscriptionEntry()
-      entry.text = decode(o.text[0]['#text'])
+      entry.text = decode(String(o.text[0]['#text']))
       entry.start = Number(o[':@']['@_start'])
       entry.duration = Number(o[':@']['@_start'])
       clean.push(entry)

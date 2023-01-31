@@ -38,6 +38,30 @@ const validWithUtf8 = `
 </transcript>
 `
 
+const validKorean = `<?xml version="1.0" encoding="utf-8" ?>
+<transcript>
+  <text start="0.84" dur="5.3">으 아 hotel</text>
+  <text start="14.99" dur="5.129">on</text>
+  <text start="17.119" dur="3">oh</text>
+  <text start="36.72" dur="8.57">[음악]</text>
+  <text start="38.239" dur="23.731">we were</text>
+  <text start="45.29" dur="16.68">ho ho ho ho lee</text>
+  <text start="67.72" dur="22.32">ho ho ho ho ho ho lee</text>
+  <text start="92.939" dur="21.141">ho ho ho ho ho lee</text>
+  <text start="112.21" dur="4.449">[음악]</text>
+  <text start="114.08" dur="5.579">hot</text>
+  <text start="116.659" dur="3">er</text>
+  <text start="119.75" dur="19.2">we here we here 2</text>
+  <text start="146.599" dur="31.531">here we go here we be a the tower</text>
+  <text start="180.319" dur="15.59">ho ho ho ho lee</text>
+  <text start="192.909" dur="3">222</text>
+  <text start="196.24" dur="3.19">222</text>
+  <text start="197.87" dur="8.19">[음악]</text>
+  <text start="199.43" dur="6.63">come on</text>
+  <text start="206.799" dur="5.311">er</text>
+  <text start="209.05" dur="3.06">[음악]</text>
+</transcript>`
+
 const correctObject = (o: any): boolean => {
   return 'text' in o && 'start' in o && 'duration' in o && typeof o.start === 'number' && typeof o.duration === 'number' && typeof o.text === 'string'
 }
@@ -64,6 +88,13 @@ describe(xmlTranscriptionToJson.name, () => {
   it('parses Japanese correctly', () => {
     const result: TranscriptionEntry[] = xmlTranscriptionToJson(validWithUtf8)
     expect(result[1].text).toBe('ないですかねじゃあ確保してないと驚くと')
+  })
+
+  it('parses Korean and number-only fields correctly', () => {
+    const result: TranscriptionEntry[] = xmlTranscriptionToJson(validKorean)
+    expect(result).toHaveLength(20)
+    expect(result[0].text).toBe('으 아 hotel')
+    expect(result[14].text).toBe('222')
   })
 
   it('parses symbols correctly', () => {
