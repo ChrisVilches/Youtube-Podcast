@@ -22,11 +22,8 @@ interface PlaylistInfo {
   items: VideoBasicInfo[]
 }
 
-// TODO: This should probably be cached somewhere. But don't cache ALL data because
-//       it could be terabytes of usernames. Remember that there's always the option to
-//       scrape the ID on the client (Flutter app) and cache the data there.
 const channelIdFromUsername = async (username: string): Promise<string> => {
-  const res = await fetch(`https://www.youtube.com/@${username}`)
+  const res = await fetch(`https://www.youtube.com/@${username}/about`)
   const rawHtml = await res.text()
   const channelId: RegExpMatchArray | null = rawHtml.match(/"browseId":"([^"]+)"/) ?? null
 
@@ -44,14 +41,10 @@ export async function getChannelVideosAsPlaylist (channelUsername: string): Prom
   const channelVideos = await channel.getVideos()
 
   return {
-    // TODO: Could the channelId eventually be the same as a playlist ID? This could happen because the IDs
-    //       are from different collections, so there's no guarantee they are always different.
-    //       If I use @username then it's guaranteed it'd never clash, but it's kinda ugly and non-standard.
     id: channelUsername,
     title: 'Latest videos',
     author: channel.metadata.title,
     isChannel: true,
-    // TODO: Dumb question, but does this create an entry in Mongo? I think not but verify.
     items: channelVideos.videos.map((item: any) => new VideoBasicInfoModel({
       videoId: item.id,
       author: channel.metadata.title,

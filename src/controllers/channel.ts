@@ -10,6 +10,10 @@ export const showChannelLatestVideosController = async (req: Request, res: Respo
     return
   }
 
-  const playlist = await getChannelVideosAsPlaylist(req.params.username)
-  res.json(playlist)
+  try {
+    const playlist = await getChannelVideosAsPlaylist(username)
+    res.json(playlist)
+  } catch (e) {
+    next(createError.BadRequest(String(e)))
+  }
 }
