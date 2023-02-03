@@ -6,6 +6,7 @@ import { persistVideo, videoExists } from '../services/storage/persisted-files'
 import { VideoBasicInfo, VideoBasicInfoModel } from '../models/video-basic-info'
 import { getInnertube } from './innertube'
 import { TranscriptionMetadata } from '../models/transcription-metadata'
+import Channel from 'youtubei.js/dist/src/parser/youtube/Channel'
 
 const DOWNLOAD_OPTIONS: DownloadOptions = {
   type: 'audio',
@@ -17,7 +18,49 @@ interface PlaylistInfo {
   id: string
   author: string
   title: string
+  isChannel: boolean
   items: VideoBasicInfo[]
+}
+
+// TODO: This should probably be cached somewhere. But don't cache ALL data because
+//       it could be terabytes of usernames. Remember that there's always the option to
+//       scrape the ID on the client (Flutter app) and cache the data there.
+const channelIdFromUsername = async (username: string): Promise<string> => {
+  const res = await fetch(`https://www.youtube.com/@${username}`)
+  const rawHtml = await res.text()
+  const channelId: RegExpMatchArray | null = rawHtml.match(/"browseId":"([^"]+)"/) ?? null
+
+  if (channelId === null) {
+    throw new Error(`Could not parse channel @${username}`)
+  }
+
+  return channelId[1]
+}
+
+export async function getChannelVideosAsPlaylist (channelUsername: string): Promise<PlaylistInfo> {
+  const yt = await getInnertube()
+  const channelId: string = await channelIdFromUsername(channelUsername)
+  const channel: Channel = await yt.getChannel(channelId)
+  const channelVideos = await channel.getVideos()
+
+  return {
+    // TODO: Could the channelId eventually be the same as a playlist ID? This could happen because the IDs
+    //       are from different collections, so there's no guarantee they are always different.
+    //       If I use @username then it's guaranteed it'd never clash, but it's kinda ugly and non-standard.
+    id: channelUsername,
+    title: 'Latest videos',
+    author: channel.metadata.title,
+    isChannel: true,
+    // TODO: Dumb question, but does this create an entry in Mongo? I think not but verify.
+    items: channelVideos.videos.map((item: any) => new VideoBasicInfoModel({
+      videoId: item.id,
+      author: channel.metadata.title,
+      title: item.title.runs[0].text as string,
+      duration: item.duration.seconds as number,
+      description: item.description_snippet?.text ?? '',
+      thumbnails: item.thumbnails as Thumbnail[]
+    }))
+  }
 }
 
 export async function getBasicInfoRaw (videoId: string): Promise<VideoInfo> {
@@ -95,6 +138,7 @@ export async function getPlayList (id: string): Promise<PlaylistInfo> {
     id: res.endpoint.payload.playlistId,
     title: res.info.title,
     author: res.info.author.name,
+    isChannel: false,
     items: res.items.map((item: any): VideoBasicInfo => new VideoBasicInfoModel({
       videoId: item.id,
       author: item.author.name,

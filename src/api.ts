@@ -11,6 +11,7 @@ import { videoInfoRawController } from './controllers/video-info-raw'
 import { bootstrap } from './bootstrap'
 import { processedVideoInfoController } from './controllers/video-info'
 import { transcriptionsController } from './controllers/transcriptions'
+import { showChannelLatestVideosController } from './controllers/channel'
 
 bootstrap(() => {
   const app: Express = express()
@@ -26,6 +27,7 @@ bootstrap(() => {
   app.get('/download', downloadController)
   app.head('/download', downloadHeadController)
   app.get('/playlist/:id', showPlaylistInfoController)
+  app.get('/channel/:username', showChannelLatestVideosController)
   app.use('*', (_res, _req, next: NextFunction) => next(createError.NotFound()))
   app.use(errorHandler)
 
