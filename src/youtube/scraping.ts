@@ -22,7 +22,7 @@ interface PlaylistInfo {
   items: VideoBasicInfo[]
 }
 
-const channelIdFromUsername = async (username: string): Promise<string> => {
+export const channelIdFromUsername = async (username: string): Promise<string> => {
   const res = await fetch(`https://www.youtube.com/@${username}/about`)
   const rawHtml = await res.text()
   const channelId: RegExpMatchArray | null = rawHtml.match(/"browseId":"([^"]+)"/) ?? null
