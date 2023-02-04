@@ -7,6 +7,7 @@ import { VideoBasicInfo, VideoBasicInfoModel } from '../models/video-basic-info'
 import { getInnertube } from './innertube'
 import { TranscriptionMetadata } from '../models/transcription-metadata'
 import Channel from 'youtubei.js/dist/src/parser/youtube/Channel'
+import { UserChannel, UserChannelModel } from '../models/user-channel'
 
 const DOWNLOAD_OPTIONS: DownloadOptions = {
   type: 'audio',
@@ -22,7 +23,7 @@ interface PlaylistInfo {
   items: VideoBasicInfo[]
 }
 
-export const channelIdFromUsername = async (username: string): Promise<string> => {
+export const channelIdFromUsernameNonCached = async (username: string): Promise<string> => {
   const res = await fetch(`https://www.youtube.com/@${username}/about`)
   const rawHtml = await res.text()
   const channelId: RegExpMatchArray | null = rawHtml.match(/"browseId":"([^"]+)"/) ?? null
@@ -32,6 +33,20 @@ export const channelIdFromUsername = async (username: string): Promise<string> =
   }
 
   return channelId[1]
+}
+
+const channelIdFromUsername = async (username: string): Promise<string> => {
+  username = username.trim().toLowerCase()
+  const channel: UserChannel | null = await UserChannelModel.findOne({ username })
+
+  if (channel !== null) {
+    console.log('[channelIdFromUsername] Cache hit')
+    return channel.channelId
+  }
+
+  const channelId: string = await channelIdFromUsernameNonCached(username)
+  await UserChannelModel.findOneAndUpdate({ username }, { channelId }, { new: true, upsert: true })
+  return channelId
 }
 
 export async function getChannelVideosAsPlaylist (channelUsername: string): Promise<PlaylistInfo> {

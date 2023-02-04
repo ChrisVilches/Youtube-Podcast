@@ -1,12 +1,12 @@
-import { channelIdFromUsername } from './scraping'
+import { channelIdFromUsernameNonCached } from './scraping'
 
-describe(channelIdFromUsername.name, () => {
+describe(channelIdFromUsernameNonCached.name, () => {
   it('gets the channel ID correctly', async () => {
-    expect(await channelIdFromUsername('Platzi')).toBe('UC55-mxUj5Nj3niXFReG44OQ')
-    expect(await channelIdFromUsername('ruriohama')).toBe('UCKtiMrNZq0gGbPTnsMu7Bsw')
+    expect(await channelIdFromUsernameNonCached('Platzi')).toBe('UC55-mxUj5Nj3niXFReG44OQ')
+    expect(await channelIdFromUsernameNonCached('ruriohama')).toBe('UCKtiMrNZq0gGbPTnsMu7Bsw')
   })
 
   it('throws error if the channel does not exist', async () => {
-    await expect(channelIdFromUsername('asdioajdioasjdoias')).rejects.toThrowError('Could not parse channel @asdioajdioasjdoias')
+    await expect(channelIdFromUsernameNonCached('asdioajdioasjdoias')).rejects.toThrowError('Could not parse channel @asdioajdioasjdoias')
   })
 })

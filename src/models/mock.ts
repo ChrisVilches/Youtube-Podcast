@@ -1,4 +1,5 @@
 import { TranscriptionResult, TranscriptionResultModel } from './transcription-result'
+import { UserChannel, UserChannelModel } from './user-channel'
 import { VideoBasicInfo, VideoBasicInfoModel } from './video-basic-info'
 
 export const mockVideoBasicInfo = (args: any = {}): VideoBasicInfo => new VideoBasicInfoModel(Object.assign({
@@ -20,4 +21,9 @@ export const mockTranscriptionResult = (args: any = {}): TranscriptionResult => 
     { text: 'another text', start: 45, duration: 7 }
   ],
   summary: undefined
+}, args))
+
+export const mockUserChannel = (args: any = {}): UserChannel => new UserChannelModel(Object.assign({
+  username: 'username',
+  channelId: 'xxxxxyyyyyyyzzzzz'
 }, args))
