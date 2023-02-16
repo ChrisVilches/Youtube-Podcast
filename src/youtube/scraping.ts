@@ -54,9 +54,10 @@ export async function getChannelVideosAsPlaylist (channelUsername: string): Prom
   const channelId: string = await channelIdFromUsername(channelUsername)
   const channel: Channel = await yt.getChannel(channelId)
   const channelVideos = await channel.getVideos()
+  const channelHandle = channelUsername.toLowerCase().trim()
 
   return {
-    id: channelUsername,
+    id: channelHandle,
     title: 'Latest videos',
     author: channel.metadata.title,
     isChannel: true,
