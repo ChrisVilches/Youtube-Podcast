@@ -4,7 +4,7 @@ import { TimeStamps } from '@typegoose/typegoose/lib/defaultClasses'
 const clean = {
   virtuals: false,
   versionKey: false,
-  transform (_doc: any, ret: any) {
+  transform (_doc: unknown, ret: { _id: unknown }) {
     delete ret._id
   }
 }
