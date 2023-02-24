@@ -1,6 +1,5 @@
 import { streamToIterable } from 'youtubei.js/dist/src/utils/Utils'
 import VideoInfo, { DownloadOptions } from 'youtubei.js/dist/src/parser/youtube/VideoInfo'
-import Thumbnail from 'youtubei.js/dist/src/parser/classes/misc/Thumbnail'
 import { Subject } from 'rxjs'
 import { persistVideo, videoExists } from '../services/storage/persisted-files'
 import { VideoBasicInfo, VideoBasicInfoModel } from '../models/video-basic-info'
@@ -8,6 +7,9 @@ import { getInnertube } from './innertube'
 import { TranscriptionMetadata } from '../models/transcription-metadata'
 import Channel from 'youtubei.js/dist/src/parser/youtube/Channel'
 import { UserChannel, UserChannelModel } from '../models/user-channel'
+import PlaylistVideo from 'youtubei.js/dist/src/parser/classes/PlaylistVideo'
+import Video from 'youtubei.js/dist/src/parser/classes/Video'
+import Format from 'youtubei.js/dist/src/parser/classes/misc/Format'
 
 const DOWNLOAD_OPTIONS: DownloadOptions = {
   type: 'audio',
@@ -61,14 +63,20 @@ export async function getChannelVideosAsPlaylist (channelUsername: string): Prom
     title: 'Latest videos',
     author: channel.metadata.title,
     isChannel: true,
-    items: channelVideos.videos.map((item: any) => new VideoBasicInfoModel({
-      videoId: item.id,
-      author: channel.metadata.title,
-      title: item.title.runs[0].text as string,
-      duration: item.duration.seconds as number,
-      description: item.description_snippet?.text ?? '',
-      thumbnails: item.thumbnails as Thumbnail[]
-    }))
+    items: channelVideos.videos.map((item) => {
+      if (item.is(Video)) {
+        return new VideoBasicInfoModel({
+          videoId: item.id,
+          author: channel.metadata.title,
+          title: item.title.runs?.at(0)?.text ?? '',
+          duration: item.duration.seconds,
+          description: item.description_snippet?.text ?? '',
+          thumbnails: item.thumbnails
+        })
+      } else {
+        throw new Error('Incorrect object')
+      }
+    })
   }
 }
 
@@ -77,8 +85,10 @@ export async function getBasicInfoRaw (videoId: string): Promise<VideoInfo> {
   return await yt.getBasicInfo(videoId)
 }
 
-const extractLengthBytes = (data: any): number | undefined => {
-  const value = data.streaming_data?.adaptive_formats.filter((x: any) => x.mime_type.startsWith('audio/mp4'))[0]?.content_length
+const isAudioMp4Format = (f: Format): boolean => f.mime_type.startsWith('audio/mp4')
+
+const extractLengthBytes = (data: VideoInfo): number | undefined => {
+  const value = data.streaming_data?.adaptive_formats.filter(isAudioMp4Format).at(0)?.content_length ?? 0
   if (!isFinite(value)) {
     return 0
   }
@@ -148,13 +158,19 @@ export async function getPlayList (id: string): Promise<PlaylistInfo> {
     title: res.info.title,
     author: res.info.author.name,
     isChannel: false,
-    items: res.items.map((item: any): VideoBasicInfo => new VideoBasicInfoModel({
-      videoId: item.id,
-      author: item.author.name,
-      title: item.title.runs[0].text as string,
-      duration: item.duration.seconds as number,
-      description: '',
-      thumbnails: item.thumbnails as Thumbnail[]
-    }))
+    items: res.items.map((item): VideoBasicInfo => {
+      if (item.is(PlaylistVideo)) {
+        return new VideoBasicInfoModel({
+          videoId: item.id,
+          author: item.author.name,
+          title: item.title.runs?.at(0)?.text,
+          duration: item.duration.seconds,
+          description: '',
+          thumbnails: item.thumbnails
+        })
+      } else {
+        throw new Error('Incorrect object')
+      }
+    })
   }
 }

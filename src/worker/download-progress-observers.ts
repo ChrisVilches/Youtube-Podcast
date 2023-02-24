@@ -45,10 +45,10 @@ export const consumeSubjectPrintCompletion = (subject: Subject<number>, scrapedT
   subject.subscribe({
     next: nextCompleteBytes,
     complete: resolve,
-    error: (e: any) => {
+    error: (e: unknown) => {
       console.log(`❌ ${e as string}`)
       console.log('❌ Details:')
-      console.log(e.stack)
+      console.log((e as Error).stack)
       resolve()
     }
   })
