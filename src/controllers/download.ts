@@ -10,7 +10,7 @@ import { FILE_CONTENT_TYPE, FILE_DOWNLOAD_EXTENSION } from '../services/storage/
 const contentDisposition = async (videoId: string): Promise<string> => {
   const filename = await videoToFileName(videoId, FILE_DOWNLOAD_EXTENSION)
   const encodedFilename = encodeURIComponent(filename)
-  return `attachment; filename*="UTF-8''${encodedFilename}"`
+  return `attachment; filename*=UTF-8''${encodedFilename}`
 }
 
 const setDownloadHeaders = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
