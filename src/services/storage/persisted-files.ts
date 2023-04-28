@@ -3,6 +3,7 @@ import internal from 'stream'
 import { BUCKET_NAME, getMinioClient } from './minio-client'
 import { m4aAddMetadata } from '../../util/ffmpeg-metadata'
 import { FILE_CONTENT_TYPE } from './constants'
+import crypto from 'crypto'
 
 export const videoExists = async (videoId: string): Promise<boolean> => {
   const client = await getMinioClient()
@@ -28,12 +29,13 @@ export const videoOriginalTitle = async (videoId: string): Promise<string> => {
 export const persistVideo = async (videoId: string, videoTitle: string, fileContent: Buffer): Promise<UploadedObjectInfo> => {
   const client = await getMinioClient()
 
+  fileContent = await m4aAddMetadata(videoId, fileContent)
+
   const metaData = {
     'Content-Type': FILE_CONTENT_TYPE,
-    'Original-Title-Encoded': encodeURI(videoTitle)
+    'Original-Title-Encoded': encodeURI(videoTitle),
+    sha1: crypto.createHash('sha1').update(fileContent).digest('hex')
   }
-
-  fileContent = await m4aAddMetadata(videoId, fileContent)
 
   return await client.putObject(BUCKET_NAME, videoId, fileContent, metaData)
 }
