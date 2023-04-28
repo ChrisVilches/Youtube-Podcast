@@ -52,4 +52,3 @@ const executeDownload = async (_req: Request, res: Response, next: NextFunction)
 }
 
 export const downloadController = [requireVideoId, setVideoAlreadyPrepared, setDownloadHeaders, executeDownload, updateDownloadStats]
-export const downloadHeadController = [requireVideoId, setVideoAlreadyPrepared, setDownloadHeaders]
