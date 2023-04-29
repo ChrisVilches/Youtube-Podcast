@@ -26,6 +26,8 @@ export const videoOriginalTitle = async (videoId: string): Promise<string> => {
   return decodeURI(stat.metaData['Original-Title-Encoded'.toLowerCase()])
 }
 
+const getSha1 = (buffer: Buffer): string => crypto.createHash('sha1').update(buffer).digest('hex')
+
 export const persistVideo = async (videoId: string, videoTitle: string, fileContent: Buffer): Promise<UploadedObjectInfo> => {
   const client = await getMinioClient()
 
@@ -34,7 +36,7 @@ export const persistVideo = async (videoId: string, videoTitle: string, fileCont
   const metaData = {
     'Content-Type': FILE_CONTENT_TYPE,
     'Original-Title-Encoded': encodeURI(videoTitle),
-    sha1: crypto.createHash('sha1').update(fileContent).digest('hex')
+    sha1: getSha1(fileContent)
   }
 
   return await client.putObject(BUCKET_NAME, videoId, fileContent, metaData)
