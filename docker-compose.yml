@@ -1,0 +1,113 @@
+# TODO: There's a bit of repetition here so I should extend a base service.
+#       (for example that contains the context+dockerfile, but not target, and that
+#       contains the same volumes.)
+
+version: '3.8'
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: base
+    ports:
+      - "$API_PORT:$API_PORT"
+    command: npm run dev:api
+    volumes:
+      - .:/usr/app
+      - node_modules:/usr/app/node_modules
+      - dist:/usr/app/dist
+    depends_on:
+      - minio
+      - mongo
+      - redis
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    healthcheck:
+      test: wget http://localhost:$API_PORT -O /dev/null
+      interval: 5s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: worker
+    command: npm run dev:worker
+    volumes:
+      - .:/usr/app
+      - node_modules:/usr/app/node_modules
+      - dist:/usr/app/dist
+    depends_on:
+      - minio
+      - mongo
+      - redis
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+  socket:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: base
+    ports:
+      - "$SOCKET_IO_PORT:$SOCKET_IO_PORT"
+    command: npm run dev:websocket
+    volumes:
+      - .:/usr/app
+      - node_modules:/usr/app/node_modules
+      - dist:/usr/app/dist
+    depends_on:
+      - minio
+      - mongo
+      - redis
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+  # TODO: https://min.io/docs/minio/linux/reference/minio-server/minio-server.html
+  # Using MINIO_SECRET_KEY and MINIO_ACCESS_KEY are deprecated!!! Must change
+  # several parts in the source code.
+  minio:
+    image: minio/minio:RELEASE.2022-09-17T00-09-45Z.hotfix.834a748f6
+    environment:
+      MINIO_ACCESS_KEY: $MINIO_ACCESS_KEY
+      MINIO_SECRET_KEY: $MINIO_SECRET_KEY
+    command: server /data --address :9001 --console-address :9002
+    ports:
+      - "9002:9002"
+  mongo:
+    image: mongo:jammy
+  redis:
+    image: redis:alpine3.17
+
+# TODO: A bug (which is probably expected behavior, so I should research and if it is, then just comment/document it)
+#       1. Deploy (docker compose up -d)
+#       2. Remove local node_modules folder
+#       3. npm install (locally)
+#       4. Save file prepare-events-websocket.ts
+#       5. See logs of socket container. Should display error because some dependencies were compiled using different Node versions.
+#       This probably means the node_modules folder is ignored initially, but if I re-create it, then it's reflected in the containers.
+#       This is most likely expected behavior and I probably should find a better way to mount the files.
+#       Although this way is OK so just comment that this can happen.
+#
+#       Another solution (which I don't know how it works) is to change the path to node_modules
+#       that way I can put it somewhere else, not /usr/app and that way it would work OK (even though this would still make a reference
+#       from my local node_modules to the container in case I do "npm install" locally, but it's just a reference, and the files wouldn't
+#       be used by the container's Node runtime).
+#       https://stackoverflow.com/a/35317425/4757175
+#
+#       This may not work properly, since it seems NODE_PATH is only used if the main resolving algorithm fails.
+#       https://nodejs.org/api/modules.html#loading-from-the-global-folders
+volumes:
+  node_modules:
+  dist:

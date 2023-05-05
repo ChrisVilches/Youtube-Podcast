@@ -34,6 +34,12 @@ Worker:
 npm run dev:worker
 ```
 
+## Using Docker
+
+```sh
+docker compose up -d
+```
+
 ## Tools Used
 
 * TypeScript
