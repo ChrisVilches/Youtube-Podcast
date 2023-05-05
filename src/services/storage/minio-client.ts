@@ -18,8 +18,8 @@ export const getMinioClient = async (): Promise<Minio.Client> => {
       endPoint: process.env.MINIO_ENDPOINT as string,
       port: Number(process.env.MINIO_PORT as string),
       useSSL: process.env.MINIO_SSL === '1',
-      accessKey: process.env.MINIO_ACCESS_KEY as string,
-      secretKey: process.env.MINIO_SECRET_KEY as string
+      accessKey: process.env.MINIO_ROOT_USER as string,
+      secretKey: process.env.MINIO_ROOT_PASSWORD as string
     })
 
     await initBucket(client)
