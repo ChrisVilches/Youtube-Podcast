@@ -34,6 +34,12 @@ Worker:
 npm run dev:worker
 ```
 
+Socket Process:
+
+```sh
+npm run dev:websocket
+```
+
 ## Using Docker
 
 ```sh
