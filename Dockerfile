@@ -6,6 +6,9 @@ RUN apk --no-cache --virtual build-dependencies add python3 make g++
 
 COPY package*.json ./
 RUN npm install
+
+COPY tsconfig.json ./
+COPY src/ src/
 RUN npm run build
 
 FROM base AS worker

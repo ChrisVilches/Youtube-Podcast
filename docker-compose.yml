@@ -1,13 +1,10 @@
 version: '3.8'
 
 x-base-service: &base-service
+  env_file: .env
   build:
     context: .
     dockerfile: Dockerfile
-  volumes:
-    - .:/usr/app
-    - node_modules:/usr/app/node_modules
-    - dist:/usr/app/dist
   depends_on:
     - minio
     - mongo
@@ -57,7 +54,3 @@ services:
     image: mongo:jammy
   redis:
     image: redis:alpine3.17
-
-volumes:
-  node_modules:
-  dist:

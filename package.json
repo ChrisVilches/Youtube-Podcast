@@ -7,9 +7,9 @@
     "dev:api": "ts-node-dev --files src/api.ts",
     "dev:worker": "ts-node-dev --files src/queue-consumer.ts",
     "dev:websocket": "ts-node-dev --files src/prepare-events-websocket.ts",
-    "api": "node dist/api.js",
-    "worker": "node dist/queue-consumer.js",
-    "websocket": "node dist/prepare-events-websocket.js",
+    "api": "node ./dist/api.js",
+    "worker": "node ./dist/queue-consumer.js",
+    "websocket": "node ./dist/prepare-events-websocket.js",
     "test": "jest --verbose --setupFiles dotenv/config",
     "lint": "ts-standard --fix"
   },
