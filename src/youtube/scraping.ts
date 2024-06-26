@@ -59,9 +59,7 @@ const channelIdFromUsername = async (username: string): Promise<string> => {
   return channelId
 }
 
-function isVideo (x: unknown): x is Video {
-  return typeof x === 'object' && x !== null && 'type' in x && x.type === 'Video'
-}
+const isType = <T>(type: string) => (x: unknown): x is T => typeof x === 'object' && x !== null && 'type' in x && x.type === type
 
 export async function getChannelVideosAsPlaylist (channelUsername: string): Promise<PlaylistInfo> {
   const yt = await getInnertube()
@@ -75,7 +73,7 @@ export async function getChannelVideosAsPlaylist (channelUsername: string): Prom
     title: 'Latest videos',
     author: channel.metadata.title ?? '',
     isChannel: true,
-    items: channelVideos.videos.filter(isVideo).map((item) => new VideoBasicInfoModel({
+    items: channelVideos.videos.filter(isType<Video>('Video')).map((item) => new VideoBasicInfoModel({
       videoId: item.id,
       author: channel.metadata.title,
       title: item.title.runs?.at(0)?.text ?? '',
@@ -155,10 +153,6 @@ export async function downloadAndPersist (info: VideoBasicInfo, subject: Subject
   // subject.complete()
 }
 
-function isPlaylistVideo (x: unknown): x is PlaylistVideo {
-  return typeof x === 'object' && x !== null && 'type' in x && x.type === 'PlaylistVideo'
-}
-
 export async function getPlayList (id: string): Promise<PlaylistInfo> {
   const yt = await getInnertube()
   const res = await yt.getPlaylist(id)
@@ -168,7 +162,7 @@ export async function getPlayList (id: string): Promise<PlaylistInfo> {
     title: res.info?.title ?? '',
     author: res.info.author.name,
     isChannel: false,
-    items: res.items.filter(isPlaylistVideo).map((item) => new VideoBasicInfoModel({
+    items: res.items.filter(isType<PlaylistVideo>('PlaylistVideo')).map((item) => new VideoBasicInfoModel({
       videoId: item.id,
       author: item.author.name,
       title: item.title.runs?.at(0)?.text,
