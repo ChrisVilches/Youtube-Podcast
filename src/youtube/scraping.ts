@@ -12,6 +12,7 @@ import { Format } from 'youtubei.js/dist/src/parser/misc'
 import { PlaylistVideo, Video } from 'youtubei.js/dist/src/parser/nodes'
 import { UserChannel, UserChannelModel } from '../models/user-channel'
 import Channel from 'youtubei.js/dist/src/parser/youtube/Channel'
+import { DownloadOptions } from 'youtubei.js/dist/src/types/FormatUtils'
 // import { TranscriptionMetadata } from '../models/transcription-metadata'
 // import Channel from 'youtubei.js/dist/src/parser/youtube/Channel'
 // import { UserChannel, UserChannelModel } from '../models/user-channel'
@@ -19,11 +20,11 @@ import Channel from 'youtubei.js/dist/src/parser/youtube/Channel'
 // import Video from 'youtubei.js/dist/src/parser/classes/Video'
 // import Format from 'youtubei.js/dist/src/parser/classes/misc/Format'
 
-// const DOWNLOAD_OPTIONS: DownloadOptions = {
-//   type: 'audio',
-//   quality: 'bestefficiency',
-//   format: 'mp4'
-// }
+const DOWNLOAD_OPTIONS: DownloadOptions = {
+  type: 'audio',
+  quality: 'bestefficiency',
+  format: 'mp4'
+}
 
 interface PlaylistInfo {
   id: string
@@ -100,6 +101,12 @@ const extractLengthBytes = (data: VideoInfo): number | undefined => {
   return value
 }
 
+async function getAudioDirectUrl (videoId: string): Promise<string> {
+  const yt = await getInnertube()
+  const data = await yt.getStreamingData(videoId, DOWNLOAD_OPTIONS)
+  return data.decipher(yt.session.player)
+}
+
 export async function fetchAndSaveBasicInfo (videoId: string): Promise<VideoBasicInfo> {
   const yt = await getInnertube()
   const data: VideoInfo = await yt.getBasicInfo(videoId)
@@ -117,7 +124,8 @@ export async function fetchAndSaveBasicInfo (videoId: string): Promise<VideoBasi
     description: description ?? '',
     thumbnails: thumbnails ?? [],
     lengthBytes,
-    transcriptions
+    transcriptions,
+    audioUrl: await getAudioDirectUrl(videoId)
   }, { new: true, upsert: true })
 }
 

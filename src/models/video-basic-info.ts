@@ -36,6 +36,9 @@ export class VideoBasicInfo extends Base {
   public description!: string
 
   @prop({ required: true })
+  public audioUrl?: string
+
+  @prop({ required: true })
   public lengthBytes?: number
 
   @prop({ required: true, type: () => [Thumbnail] })
