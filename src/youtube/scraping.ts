@@ -1,21 +1,29 @@
-import { streamToIterable } from 'youtubei.js/dist/src/utils/Utils'
-import VideoInfo, { DownloadOptions } from 'youtubei.js/dist/src/parser/youtube/VideoInfo'
+// TODO: This module was rewritten. But it's not complete as of now.
+//       Some functions are not implemented yet.
+
+// import { streamToIterable } from 'youtubei.js/dist/src/utils/Utils'
+import VideoInfo from 'youtubei.js/dist/src/parser/youtube/VideoInfo'
 import { Subject } from 'rxjs'
-import { persistVideo, videoExists } from '../services/storage/persisted-files'
+// import { persistVideo, videoExists } from '../services/storage/persisted-files'
 import { VideoBasicInfo, VideoBasicInfoModel } from '../models/video-basic-info'
 import { getInnertube } from './innertube'
 import { TranscriptionMetadata } from '../models/transcription-metadata'
-import Channel from 'youtubei.js/dist/src/parser/youtube/Channel'
+import { Format } from 'youtubei.js/dist/src/parser/misc'
+import { PlaylistVideo, Video } from 'youtubei.js/dist/src/parser/nodes'
 import { UserChannel, UserChannelModel } from '../models/user-channel'
-import PlaylistVideo from 'youtubei.js/dist/src/parser/classes/PlaylistVideo'
-import Video from 'youtubei.js/dist/src/parser/classes/Video'
-import Format from 'youtubei.js/dist/src/parser/classes/misc/Format'
+import Channel from 'youtubei.js/dist/src/parser/youtube/Channel'
+// import { TranscriptionMetadata } from '../models/transcription-metadata'
+// import Channel from 'youtubei.js/dist/src/parser/youtube/Channel'
+// import { UserChannel, UserChannelModel } from '../models/user-channel'
+// import PlaylistVideo from 'youtubei.js/dist/src/parser/classes/PlaylistVideo'
+// import Video from 'youtubei.js/dist/src/parser/classes/Video'
+// import Format from 'youtubei.js/dist/src/parser/classes/misc/Format'
 
-const DOWNLOAD_OPTIONS: DownloadOptions = {
-  type: 'audio',
-  quality: 'bestefficiency',
-  format: 'mp4'
-}
+// const DOWNLOAD_OPTIONS: DownloadOptions = {
+//   type: 'audio',
+//   quality: 'bestefficiency',
+//   format: 'mp4'
+// }
 
 interface PlaylistInfo {
   id: string
@@ -51,6 +59,10 @@ const channelIdFromUsername = async (username: string): Promise<string> => {
   return channelId
 }
 
+function isVideo (x: unknown): x is Video {
+  return typeof x === 'object' && x !== null && 'type' in x && x.type === 'Video'
+}
+
 export async function getChannelVideosAsPlaylist (channelUsername: string): Promise<PlaylistInfo> {
   const yt = await getInnertube()
   const channelId: string = await channelIdFromUsername(channelUsername)
@@ -61,22 +73,16 @@ export async function getChannelVideosAsPlaylist (channelUsername: string): Prom
   return {
     id: channelHandle,
     title: 'Latest videos',
-    author: channel.metadata.title,
+    author: channel.metadata.title ?? '',
     isChannel: true,
-    items: channelVideos.videos.map((item) => {
-      if (item.is(Video)) {
-        return new VideoBasicInfoModel({
-          videoId: item.id,
-          author: channel.metadata.title,
-          title: item.title.runs?.at(0)?.text ?? '',
-          duration: item.duration.seconds,
-          description: item.description_snippet?.text ?? '',
-          thumbnails: item.thumbnails
-        })
-      } else {
-        throw new Error('Incorrect object')
-      }
-    })
+    items: channelVideos.videos.filter(isVideo).map((item) => new VideoBasicInfoModel({
+      videoId: item.id,
+      author: channel.metadata.title,
+      title: item.title.runs?.at(0)?.text ?? '',
+      duration: item.duration.seconds,
+      description: item.description_snippet?.text ?? '',
+      thumbnails: item.thumbnails
+    }))
   }
 }
 
@@ -103,7 +109,7 @@ export async function fetchAndSaveBasicInfo (videoId: string): Promise<VideoBasi
   const { title, duration, short_description: description, thumbnail: thumbnails, channel } = data.basic_info
 
   const lengthBytes: number | undefined = extractLengthBytes(data)
-  const transcriptions: TranscriptionMetadata[] = data.captions?.caption_tracks.map(data => ({ name: data.name.text, url: data.base_url, lang: data.language_code })) ?? []
+  const transcriptions: TranscriptionMetadata[] = data.captions?.caption_tracks?.map(data => ({ name: data.name.text ?? '', url: data.base_url, lang: data.language_code })) ?? []
   const author: string = channel?.name ?? ''
 
   return await VideoBasicInfoModel.findOneAndUpdate({ videoId }, {
@@ -117,36 +123,40 @@ export async function fetchAndSaveBasicInfo (videoId: string): Promise<VideoBasi
   }, { new: true, upsert: true })
 }
 
-async function download (videoId: string, subject: Subject<number>): Promise<Buffer> {
-  if (await videoExists(videoId)) {
-    throw new Error(`Video ${videoId} was already downloaded`)
-  }
+// async function download (videoId: string, subject: Subject<number>): Promise<Buffer> {
+//   if (await videoExists(videoId)) {
+//     throw new Error(`Video ${videoId} was already downloaded`)
+//   }
 
-  const yt = await getInnertube()
+//   const yt = await getInnertube()
 
-  const stream = await yt.download(videoId, DOWNLOAD_OPTIONS)
-  const data = []
+//   const stream = await yt.download(videoId, DOWNLOAD_OPTIONS)
+//   const data = []
 
-  let completeBytes = 0
+//   let completeBytes = 0
 
-  subject.next(0)
-  for await (const chunk of streamToIterable(stream)) {
-    data.push(chunk)
-    completeBytes += chunk.byteLength
-    subject.next(completeBytes)
-  }
+//   subject.next(0)
+//   for await (const chunk of streamToIterable(stream)) {
+//     data.push(chunk)
+//     completeBytes += chunk.byteLength
+//     subject.next(completeBytes)
+//   }
 
-  return Buffer.concat(data)
-}
+//   return Buffer.concat(data)
+// }
 
 export async function downloadAndPersist (info: VideoBasicInfo, subject: Subject<number>): Promise<void> {
-  const { videoId, title } = info
+  // const { videoId, title } = info
 
-  info.validateCanDownload()
+  // info.validateCanDownload()
 
-  const binary: Buffer = await download(videoId, subject)
-  await persistVideo(videoId, title, binary)
-  subject.complete()
+  // const binary: Buffer = await download(videoId, subject)
+  // await persistVideo(videoId, title, binary)
+  // subject.complete()
+}
+
+function isPlaylistVideo (x: unknown): x is PlaylistVideo {
+  return typeof x === 'object' && x !== null && 'type' in x && x.type === 'PlaylistVideo'
 }
 
 export async function getPlayList (id: string): Promise<PlaylistInfo> {
@@ -154,23 +164,17 @@ export async function getPlayList (id: string): Promise<PlaylistInfo> {
   const res = await yt.getPlaylist(id)
 
   return {
-    id: res.endpoint.payload.playlistId,
-    title: res.info.title,
+    id: res.endpoint?.payload.playlistId,
+    title: res.info?.title ?? '',
     author: res.info.author.name,
     isChannel: false,
-    items: res.items.map((item): VideoBasicInfo => {
-      if (item.is(PlaylistVideo)) {
-        return new VideoBasicInfoModel({
-          videoId: item.id,
-          author: item.author.name,
-          title: item.title.runs?.at(0)?.text,
-          duration: item.duration.seconds,
-          description: '',
-          thumbnails: item.thumbnails
-        })
-      } else {
-        throw new Error('Incorrect object')
-      }
-    })
+    items: res.items.filter(isPlaylistVideo).map((item) => new VideoBasicInfoModel({
+      videoId: item.id,
+      author: item.author.name,
+      title: item.title.runs?.at(0)?.text,
+      duration: item.duration.seconds,
+      description: '',
+      thumbnails: item.thumbnails
+    }))
   }
 }
