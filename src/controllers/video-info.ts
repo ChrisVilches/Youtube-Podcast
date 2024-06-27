@@ -7,10 +7,16 @@ import { getModelForClass } from '@typegoose/typegoose'
 import { DownloadStatModel } from '../models/download-stat'
 import { fetchAndSaveBasicInfo } from '../youtube/scraping'
 
+const agoTimeMs = 15 * 60 * 1000
+
 const getMetadata = async (videoId: string): Promise<VideoBasicInfo | null> => {
-  let metadata: VideoBasicInfo | null = await getModelForClass(VideoBasicInfo).findOne({ videoId })
+  let metadata: VideoBasicInfo | null = await getModelForClass(VideoBasicInfo).findOne({
+    videoId,
+    updatedAt: { $gt: new Date(Date.now() - agoTimeMs) }
+  })
 
   if (metadata === null) {
+    console.log('Video Basic Info had expired (or not found), so it was fetched again')
     try {
       metadata = await fetchAndSaveBasicInfo(videoId)
     } catch {
